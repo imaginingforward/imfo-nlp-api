@@ -31,11 +31,11 @@ with open("keyword_map.csv", "r") as f:
             keyword_display_map[row["User Query Phrase"]] = row["Canonical Value"]            
 
 def normalize_query(user_input):
-    words = user_input.lower().split()
+    user_input_lower = user_input.lower()
     filters = {}
-    for word in words:
-        if word in keyword_dict:
-            for column, value in keyword_dict[word]:
+    for phrase, mappings in keyword_dict.items():
+        if phrase in user_input_lower:
+            for column, value in mappings:
                 if column not in filters:
                     filters[column] = set()
                 filters[column].add(value.lower())
