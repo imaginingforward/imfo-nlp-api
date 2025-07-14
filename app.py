@@ -66,8 +66,14 @@ def parse_query():
     if not query:
         return jsonify({"error": "Missing query"}),400
 
+    print("Received query:", query)   # <-- Debug print here
     filters = normalize_query(query)
+    print("Filters applied:", filters)  # <-- Debug print here
     results = filter_db(filters)
+    print(f"Found {len(results)} matching records")  # <-- Debug print here
+
+    # filters = normalize_query(query)
+    # results = filter_db(filters)
 
     # Frontend Card Format
     response =[]
