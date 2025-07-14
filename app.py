@@ -17,7 +17,7 @@ keyword_map = pd.read_csv("keyword_map.csv").fillna("")
 keyword_dict = {}
 for _, row in keyword_map.iterrows():
     phrase = row["User Query Phrase"].lower().strip()
-    column = row["Maps to Column"]
+    column = row["Maps To Column"]
     value = row["Canonical Value"]
     if phrase not in keyword_dict:
         keyword_dict[phrase] = []
