@@ -1,0 +1,103 @@
+User Query Phrase,Maps To Column,Canonical Value
+SAR,business_activity,synthetic aperture radar
+GNSS,business_activity,global navigation satellite system
+SSA,business_activity,space situational awareness
+PNT,business_activity,position navigation tracking
+ISR,business_activity,"intelligence, surveillance, reconnaissance"
+LEO,business_activity,low earth orbit
+VLEO,business_activity,very low earth orbit
+HEO,business_activity,high earth orbit
+GEO,business_activity,geostationary equatorial orbit
+MEO,business_activity,medium earth orbit
+VTOL,business_activity,vertical take-off and landing
+VTVL,business_activity,"vertical take-off, vertical landing"
+UAV,business_activity,unmanned aerial vehicle
+UAV,business_area,Drones & Unmanned Vehicles
+drone,business_area,Drones & Unmanned Vehicles
+optical,business_area,Satellite Communications & Networking
+network,business_area,Satellite Communications & Networking
+communications,business_area,Satellite Communications & Networking
+quantum,business_area,Satellite Communications & Networking
+satcom,business_area,Satellite Communications & Networking
+satcomms,business_area,Satellite Communications & Networking
+frontier,business_area,Space Defense & Security
+defense,business_area,Space Defense & Security
+weapon,business_area,Space Defense & Security
+camera,business_area,Space Defense & Security
+sensors,business_area,Space Defense & Security
+cyber,business_area,Space Defense & Security
+national security,business_area,Space Defense & Security
+earth imaging,business_area,Imaging & Perception Systems
+earth observation,business_area,Imaging & Perception Systems
+cubesat,business_area,Launch & Payload
+nanosat,business_area,Launch & Payload
+satellite manufacturer,business_area,Launch & Payload
+satellite producer,business_area,Launch & Payload
+orbital vehicle,business_area,Launch & Payload
+LA,hq_city,Los Angeles
+LAX,hq_city,Los Angeles
+NY,hq_city,New York City
+NYC,hq_city,New York City
+SF,hq_city,San Francisco
+SFO,hq_city,San Francisco
+Bangalore,hq_city,Bengaluru
+UAE,hq_country,United Arab Emirates
+UK,hq_country,England
+USA,hq_country,United States of America
+AL,hq_state,Alabama
+AK,hq_state,Alaska
+AZ,hq_state,Arizona
+AR,hq_state,Arkansas
+AS,hq_state,American Samoa
+CA,hq_state,California
+CO,hq_state,Colorado
+CT,hq_state,Connecticut
+DE,hq_state,Delaware
+DC,hq_state,District of Columbia
+FL,hq_state,Florida
+GA,hq_state,Georgia
+GU,hq_state,Guam
+HI,hq_state,Hawaii
+ID,hq_state,Idaho
+IL,hq_state,Illinois
+IN,hq_state,Indiana
+IA,hq_state,Iowa
+KS,hq_state,Kansas
+KY,hq_state,Kentucky
+LA,hq_state,Louisiana
+ME,hq_state,Maine
+MD,hq_state,Maryland
+MA,hq_state,Massachusetts
+MI,hq_state,Michigan
+MN,hq_state,Minnesota
+MS,hq_state,Mississippi
+MO,hq_state,Missouri
+MT,hq_state,Montana
+NE,hq_state,Nebraska
+NV,hq_state,Nevada
+NH,hq_state,New Hampshire
+NJ,hq_state,New Jersey
+NM,hq_state,New Mexico
+NY,hq_state,New York
+NC,hq_state,North Carolina
+ND,hq_state,North Dakota
+MP,hq_state,Northern Mariana Islands
+OH,hq_state,Ohio
+OK,hq_state,Oklahoma
+OR,hq_state,Oregon
+PA,hq_state,Pennsylvania
+PR,hq_state,Puerto Rico
+RI,hq_state,Rhode Island
+SC,hq_state,South Carolina
+SD,hq_state,South Dakota
+TN,hq_state,Tennessee
+TX,hq_state,Texas
+TT,hq_state,Trust Territories
+UT,hq_state,Utah
+VT,hq_state,Vermont
+VA,hq_state,Virginia
+VI,hq_state,Virgin Islands
+WA,hq_state,Washington
+WV,hq_state,West Virginia
+WI,hq_state,Wisconsin
+WY,hq_state,Wyoming
