@@ -1,4 +1,11 @@
 User Query Phrase,Maps To Column,Canonical Value
+space,sector,Space Tech
+space company,sector,Space Tech
+space companies,sector,Space Tech
+space startups,sector,Space Tech
+startups,sector,Space Tech
+companies,sector,Space Tech
+funding,latest_funding_stage,*
 SAR,business_activity,synthetic aperture radar
 GNSS,business_activity,global navigation satellite system
 SSA,business_activity,space situational awareness
