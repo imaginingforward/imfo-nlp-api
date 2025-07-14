@@ -11,6 +11,10 @@ CORS(app)
 
 # Load data
 db = pd.read_csv("test_db.csv").fillna("")
+for col in ["sector", "hq_state", "hq_country", "hq_city", "business_area", "business_activity"]:
+    if col in db.columns:
+        db[col] = db[col].str.lower()
+        
 keyword_map = pd.read_csv("keyword_map.csv").fillna("")
 
 # Normalize keyword map
