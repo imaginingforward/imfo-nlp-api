@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify
 import pandas as pd
 import csv
 # import spacy
-# import re
+import re
 from flask_cors import CORS
 
 # Initialize app
