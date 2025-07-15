@@ -37,12 +37,19 @@ with open("keyword_map.csv", "r") as f:
 def normalize_query(user_input):
     user_input_lower = user_input.lower()
     filters = {}
-    for phrase, mappings in keyword_dict.items():
+    
+    # Sort phrases by length to match longer ones first
+    sorted_phrases = sorted(keyword_dict.keys(), key=lambda x: -len(x))
+    
+    for phrase in sorted_phrases:
         if phrase in user_input_lower:
-            for column, value in mappings:
+            for column, value in keyword_dict[phrase]:
                 if column not in filters:
                     filters[column] = set()
                 filters[column].add(value.lower())
+            # Remove the matched phrase to prevent duplicate or substring matches
+            user_input_lower = user_input_lower.replace(phrase, "")
+
     return filters
 
 def filter_db(filters):
