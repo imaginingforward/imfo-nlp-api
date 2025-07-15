@@ -51,18 +51,21 @@ def extract_alias_filters(user_input):
     user_input_lower = user_input.lower()
     filters = {}
 
-    # Tokenize user input
-    tokens = user_input_lower.split()
-
-    # Check for state
-    state_token = [
-        token for token in tokens 
-        if token in [row["Canonical Value"].strip().lower()
-                     for _, row in keyword_map.iterrows()
-                     if row["Maps To Column"].strip() == "hq_state"]
-    ]
-    if state_token:
-        filters.setdefault("hq_state", set()).add(state_token[0])
+    locations ={
+        "hq_city":[],
+        "hq_state":[],
+        "hq_country":[]
+    }
+    
+    for _, row in keyword_map.iterrows():
+        locations[row["Maps To Column"].strip()].append(row["Canonical Value"].strip().lower())
+        
+    # Prioritized matching
+    for loc in ["hq_city", "hq_state", "hq_country"]:
+        matched = [token for token in user_input_lower.split() if token in locations[loc]]
+        if matched:
+            filters[loc] = {matched[0]}
+            break
         
     # Track already matched phrases
     sorted_phrases = sorted(keyword_aliases.keys(), key=lambda x: -len(x))
@@ -72,19 +75,17 @@ def extract_alias_filters(user_input):
             # Extract all column-value pairs mapped to this phrase
             mappings = keyword_aliases[phrase]
 
-            # Check for conflict when country and state present
-            has_state = any(col == "hq_state" for col, _ in mappings)
-            has_country = any(col == "hq_country" for col, _ in mappings)
-            
-            # Drop country if state also exists
             for col, val in mappings:
-                if has_state and col == "hq_country":
+                # Skip location if already matched higher-priority one
+                if col == "hq_country" and ("hq_state" in filters or "hq_city" in filters):
+                    continue
+                if col == "hq_state" and "hq_city" in filters:
                     continue
                 filters.setdefault(col, set()).add(val)
                 
             user_input_lower = re.sub(r'\b' + re.escape(phrase) + r'\b', ' ', user_input_lower)
     
-    return filters  # ✅ now correctly indented
+    return filters
 
 def search_db(user_query, alias_filters, db):
     """
