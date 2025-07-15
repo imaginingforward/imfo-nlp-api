@@ -12,6 +12,7 @@ logging.basicConfig(level=logging.INFO)
 app = Flask(__name__)
 CORS(app)
 
+try:
 # Load NLP model
 nlp = spacy.load("en_core_web_sm")
 
@@ -36,28 +37,51 @@ for _, row in keyword_map.iterrows():
     # Only needed for location formatting
     if column == "hq_state":
         keyword_display_map[value] = value
+except Exception as e:
+logging.error(f"Error loading data: {e}")
+app.logger.error(f"Error loading data: {e}")
 
 def extract_alias_filters(user_input):
     """
-    Find all alias phrases in user_input and build a filter dict {column: set(values)}.
-    Prioritize country over state if both match the same phrase (e.g., 'canada').
+    Build a filter dict {column: set(values)} by matching both:
+    - Exact multi-word phrases
+    - Individual words
+    Prioritize state over country if both match the same value (e.g., "california vs canada").
     """
     user_input_lower = user_input.lower()
     filters = {}
 
-    # Match known phrases
+    # Tokenize user input
+    tokens = user_input_lower.split()
+
+    # Check for state
+    state_token = [token for token in tokens if token in [row["Canonical Value"].strip().lower() for _, row in keyword_map.iterrows() if row["Maps To Column"].strip() == "hq_state"]]
+    if state_token:
+        filters.setdefault("hq_state", set()).add(state_token[0])
+        
+    # Track already matched phrases
     sorted_phrases = sorted(keyword_aliases.keys(), key=lambda x: -len(x))
     for phrase in sorted_phrases:
-        if re.search(r'\b' + re.escape(phrase) + r'\b', user_input_lower):
-            mappings = keyword_aliases[phrase]
-            has_country = any(col == "hq_country" for col, _ in mappings)
-            for col, val in mappings:
-                if has_country and col == "hq_state":
-                    continue  # skip state if country present
-                filters.setdefault(col, set()).add(val)
-            user_input_lower = re.sub(r'\b' + re.escape(phrase) + r'\b', ' ', user_input_lower)
 
-    return filters
+    # Match exact phrases with word boundaries first
+        if re.search(r'\b' + re.escape(phrase) + r'\b', user_input_lower):
+
+            # Extractg all column-value pairs mapped to this phrase
+            mappings = keyword_aliases[phrase]
+
+            # Check for conflict when country and state present
+            has_state = any(col == "hq_state" for col, _ in mappings)
+            has_country = any(col == "hq_country" for col, _ in mappings)
+            
+            # Drop country if state also exists
+            for col, val in mappings:
+                if has_state and col == "hq_country":
+                    continue
+                filters.setdefault(col, set()).add(val)
+                
+            user_input_lower = re.sub(r'\b' + re.escape(phrase) + r'\b', ' ', user_input_lower)
+                    
+return filters
 
 def search_db(user_query, alias_filters, db):
     """
@@ -96,10 +120,20 @@ def format_location(row):
 
 @app.route("/parse", methods=["POST"])
 def parse_query():
+    try:
     data = request.get_json()
     query = data.get("query", "")
+    
     if not query:
-        return jsonify({"error": "Missing query"}), 400
+        return jsonify({"error": "Missing query"}),400
+       
+    # validate query
+    if not isinstance(query, str):
+        return jsonify({"error": "Invalid query"}),400
+
+    query = query.strip()
+    if not query:
+        return jsonify({"error":"Invalid query"}),400
 
     logging.info(f"Received query: {query}")
     alias_filters = extract_alias_filters(query)
@@ -118,6 +152,10 @@ def parse_query():
             "website_url": row.get("website_url", "")
         })
     return jsonify(response)
+except Exception as e:
+logging.error(f"Error handling request: {e}")
+app.logger.error(f"Error handling request: {e}")
+return jsonify({"error": "Internal Server Error"}),500
 
 @app.route("/", methods=["GET"])
 def home():
