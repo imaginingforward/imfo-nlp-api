@@ -18,13 +18,13 @@ for col in ["sector", "hq_state", "hq_country", "hq_city", "business_area", "bus
 # Load keyword map        
 keyword_map = pd.read_csv("keyword_map.csv").fillna("")
 
-# Build normalized keyword dict
-keyword_dict = {}
+# Build alias dictionary
+keyword_aliases = {}
 for _, row in keyword_map.iterrows():
     phrase = row["User Query Phrase"].strip().lower()
     column = row["Maps To Column"].strip()
     value = row["Canonical Value"].strip().lower()
-    keyword_dict.setdefault(phrase, []).append((column, value))
+    keyword_aliases.setdefault(phrase, []).append((column, value))
 
 # For location formatting
 keyword_display_map = {}
@@ -34,29 +34,51 @@ with open("keyword_map.csv", "r") as f:
         if row["Maps To Column"] == "hq_state":
             keyword_display_map[row["User Query Phrase"].strip().lower()] = row["Canonical Value"].strip()
 
-# Normalize and match query
-def normalize_query(user_input):
+def extract_alias_filters(user_input):
+    """
+    Find all alias phrases in user_input and build a filter dict {column: set(values)}.
+    """
     user_input_lower = user_input.lower()
     filters = {}
 
-    # Match longer phrases first
-    sorted_phrases = sorted(keyword_dict.keys(), key=lambda x: -len(x))
-
+    # Sort by length descending to match longer phrases first
+    sorted_phrases = sorted(keyword_aliases.keys(), key=lambda x: -len(x))
     for phrase in sorted_phrases:
         if phrase in user_input_lower:
-            for column, value in keyword_dict[phrase]:
-                filters.setdefault(column, set()).add(value)
-            # Remove matched phrase to avoid overlap
+            for col, val in keyword_aliases[phrase]:
+                filters.setdefault(col, set()).add(val)
+            # Remove phrase to avoid double match
             user_input_lower = user_input_lower.replace(phrase, " ")
-
     return filters
 
-# Filter database based on matched filters
-def filter_db(filters):
-    results = db.copy()
-    for column, values in filters.items():
-        results = results[results[column].isin(values)]
-    return results
+def search_db(user_query, alias_filters, db):
+    """
+    Return rows where:
+    - Any alias_filters match exactly in their columns OR
+    - Any token from user_query appears as substring in key columns
+    """
+    user_query_lower = user_query.lower()
+    tokens = set(re.findall(r'\w+', user_query_lower))  # tokenize words
+
+    # Build mask from alias filters
+    mask_alias = pd.Series([True] * len(db))  # start with True, then AND filters
+    for col, vals in alias_filters.items():
+        if col in db.columns:
+            mask_alias &= db[col].isin(vals)
+    
+    # Build mask from text search in key columns
+    columns_to_search = ['business_activity', 'description', 'hq_city', 'hq_state', 'hq_country', 'business_area', 'sector']
+    mask_text = pd.Series([False] * len(db))
+    for col in columns_to_search:
+        if col in db.columns:
+            # Combine tokens into regex pattern to match any token
+            pattern = '|'.join([re.escape(token) for token in tokens])
+            mask_text |= db[col].str.contains(pattern, case=False, na=False)
+    
+    # Combine masks: rows that match alias filters OR contain query tokens in text
+    combined_mask = mask_alias | mask_text
+
+    return db[combined_mask].copy()
 
 # Format readable location string
 def format_location(row):
@@ -78,13 +100,12 @@ def parse_query():
         return jsonify({"error": "Missing query"}),400
 
     print("Received query:", query)   # <-- Debug print here
-    filters = normalize_query(query)
-    print("Filters applied:", filters)  # <-- Debug print here
-    results = filter_db(filters)
+    
+    alias_filters = extract_alias_filters(query)
+    print("Alias filters found:", alias_filters)  # <-- Debug print here
+    
+    results = search_db(query, alias_filters, db)
     print(f"Found {len(results)} matching records")  # <-- Debug print here
-
-    # filters = normalize_query(query)
-    # results = filter_db(filters)
 
     # Frontend Card Format
     response =[]
