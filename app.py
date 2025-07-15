@@ -58,7 +58,10 @@ def extract_alias_filters(user_input):
     }
     
     for _, row in keyword_map.iterrows():
-        locations[row["Maps To Column"].strip()].append(row["Canonical Value"].strip().lower())
+        col = row["Maps To Column"].strip()
+        if col in locations:
+            value = row["Canonical Value"].strip().lower())
+            locations[col].append(value)
         
     # Prioritized matching
     for loc in ["hq_city", "hq_state", "hq_country"]:
