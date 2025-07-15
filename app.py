@@ -37,18 +37,30 @@ with open("keyword_map.csv", "r") as f:
 def extract_alias_filters(user_input):
     """
     Find all alias phrases in user_input and build a filter dict {column: set(values)}.
+    Prioritize country over state if both match the same phrase (e.g., 'canada').
     """
     user_input_lower = user_input.lower()
     filters = {}
 
-    # Sort by length descending to match longer phrases first
+    # Track which phrases we've already matched
     sorted_phrases = sorted(keyword_aliases.keys(), key=lambda x: -len(x))
     for phrase in sorted_phrases:
         if phrase in user_input_lower:
-            for col, val in keyword_aliases[phrase]:
+            # Extract all column-value pairs mapped to this phrase
+            mappings = keyword_aliases[phrase]
+
+            # Check for conflict: if both country and state present
+            has_country = any(col == "hq_country" for col, _ in mappings)
+            has_state = any(col == "hq_state" for col, _ in mappings)
+
+            # Drop state if country also exists
+            for col, val in mappings:
+                if has_country and col == "hq_state":
+                    continue  # skip incorrect state mapping
                 filters.setdefault(col, set()).add(val)
-            # Remove phrase to avoid double match
+
             user_input_lower = user_input_lower.replace(phrase, " ")
+
     return filters
 
 def search_db(user_query, alias_filters, db):
