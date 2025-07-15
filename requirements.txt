@@ -3,3 +3,4 @@ spacy
 flask-cors
 gunicorn
 pandas
+rapidfuzz
