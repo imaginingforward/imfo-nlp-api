@@ -14,60 +14,60 @@ db = pd.read_csv("test_db.csv").fillna("")
 for col in ["sector", "hq_state", "hq_country", "hq_city", "business_area", "business_activity"]:
     if col in db.columns:
         db[col] = db[col].str.lower()
-        
+
+# Load keyword map        
 keyword_map = pd.read_csv("keyword_map.csv").fillna("")
 
-# Normalize keyword map
+# Build normalized keyword dict
 keyword_dict = {}
 for _, row in keyword_map.iterrows():
-    phrase = row["User Query Phrase"].lower().strip()
-    column = row["Maps To Column"]
-    value = row["Canonical Value"]
-    if phrase not in keyword_dict:
-        keyword_dict[phrase] = []
-    keyword_dict[phrase].append((column,value))
+    phrase = row["User Query Phrase"].strip().lower()
+    column = row["Maps To Column"].strip()
+    value = row["Canonical Value"].strip().lower()
+    keyword_dict.setdefault(phrase, []).append((column, value))
 
+# For location formatting
 keyword_display_map = {}
-with open("keyword_map.csv", "r") as f: 
+with open("keyword_map.csv", "r") as f:
     reader = csv.DictReader(f)
     for row in reader:
         if row["Maps To Column"] == "hq_state":
-            keyword_display_map[row["User Query Phrase"]] = row["Canonical Value"]            
+            keyword_display_map[row["User Query Phrase"].strip().lower()] = row["Canonical Value"].strip()
 
+# Normalize and match query
 def normalize_query(user_input):
     user_input_lower = user_input.lower()
     filters = {}
-    
-    # Sort phrases by length to match longer ones first
+
+    # Match longer phrases first
     sorted_phrases = sorted(keyword_dict.keys(), key=lambda x: -len(x))
-    
+
     for phrase in sorted_phrases:
         if phrase in user_input_lower:
             for column, value in keyword_dict[phrase]:
-                if column not in filters:
-                    filters[column] = set()
-                filters[column].add(value.lower())
-            # Remove the matched phrase to prevent duplicate or substring matches
-            user_input_lower = user_input_lower.replace(phrase, "")
+                filters.setdefault(column, set()).add(value)
+            # Remove matched phrase to avoid overlap
+            user_input_lower = user_input_lower.replace(phrase, " ")
 
     return filters
 
+# Filter database based on matched filters
 def filter_db(filters):
     results = db.copy()
     for column, values in filters.items():
-        results = results[results[column].str.lower().isin(values)]
+        results = results[results[column].isin(values)]
     return results
 
-# Map Headquarters Location    
+# Format readable location string
 def format_location(row):
-    city = row.get("hq_city","")
-    state = row.get("hq_state","")
-    country = row.get("hq_country","")
+    city = row.get("hq_city", "").title()
+    state = row.get("hq_state", "").lower()
+    country = row.get("hq_country", "").title()
 
     if country.lower() == "usa":
-        state_full = keyword_display_map.get(state, state)
+        state_full = keyword_display_map.get(state, state).title()
         return f"{city}, {state_full}" if state_full else city
-    else: 
+    else:
         return f"{city}, {country}" if country else city
         
 @app.route("/parse", methods=["POST"])
