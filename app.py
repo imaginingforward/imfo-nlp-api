@@ -13,33 +13,33 @@ app = Flask(__name__)
 CORS(app)
 
 try:
-# Load NLP model
-nlp = spacy.load("en_core_web_sm")
+    # Load NLP model
+    nlp = spacy.load("en_core_web_sm")
 
-# Load database
-db = pd.read_csv("test_db.csv").fillna("")
-for col in ["sector", "hq_state", "hq_country", "hq_city", "business_area", "business_activity"]:
-    if col in db.columns:
-        db[col] = db[col].str.lower()
+    # Load database
+    db = pd.read_csv("test_db.csv").fillna("")
+    for col in ["sector", "hq_state", "hq_country", "hq_city", "business_area", "business_activity"]:
+        if col in db.columns:
+            db[col] = db[col].str.lower()
 
-# Load keyword map
-keyword_map = pd.read_csv("keyword_map.csv").fillna("")
-keyword_aliases = {}
-keyword_display_map = {}
+    # Load keyword map
+    keyword_map = pd.read_csv("keyword_map.csv").fillna("")
+    keyword_aliases = {}
+    keyword_display_map = {}
 
-# Build alias dictionary + keyword display map
-for _, row in keyword_map.iterrows():
-    phrase = row["User Query Phrase"].strip().lower()
-    column = row["Maps To Column"].strip()
-    value = row["Canonical Value"].strip().lower()
-    keyword_aliases.setdefault(phrase, []).append((column, value))
+    # Build alias dictionary + keyword display map
+    for _, row in keyword_map.iterrows():
+        phrase = row["User Query Phrase"].strip().lower()
+        column = row["Maps To Column"].strip()
+        value = row["Canonical Value"].strip().lower()
+        keyword_aliases.setdefault(phrase, []).append((column, value))
     
-    # Only needed for location formatting
-    if column == "hq_state":
-        keyword_display_map[value] = value
+        # Only needed for location formatting
+        if column == "hq_state":
+            keyword_display_map[value] = value
 except Exception as e:
-logging.error(f"Error loading data: {e}")
-app.logger.error(f"Error loading data: {e}")
+    logging.error(f"Error loading data: {e}")
+    app.logger.error(f"Error loading data: {e}")
 
 def extract_alias_filters(user_input):
     """
@@ -55,7 +55,12 @@ def extract_alias_filters(user_input):
     tokens = user_input_lower.split()
 
     # Check for state
-    state_token = [token for token in tokens if token in [row["Canonical Value"].strip().lower() for _, row in keyword_map.iterrows() if row["Maps To Column"].strip() == "hq_state"]]
+    state_token = [
+        token for token in tokens 
+        if token in [row["Canonical Value"].strip().lower()
+                     for _, row in keyword_map.iterrows()
+                     if row["Maps To Column"].strip() == "hq_state"]
+    ]
     if state_token:
         filters.setdefault("hq_state", set()).add(state_token[0])
         
@@ -66,7 +71,7 @@ def extract_alias_filters(user_input):
     # Match exact phrases with word boundaries first
         if re.search(r'\b' + re.escape(phrase) + r'\b', user_input_lower):
 
-            # Extractg all column-value pairs mapped to this phrase
+            # Extract all column-value pairs mapped to this phrase
             mappings = keyword_aliases[phrase]
 
             # Check for conflict when country and state present
@@ -121,41 +126,41 @@ def format_location(row):
 @app.route("/parse", methods=["POST"])
 def parse_query():
     try:
-    data = request.get_json()
-    query = data.get("query", "")
+        data = request.get_json()
+        query = data.get("query", "")
     
-    if not query:
-        return jsonify({"error": "Missing query"}),400
+        if not query:
+            return jsonify({"error": "Missing query"}),400
        
-    # validate query
-    if not isinstance(query, str):
-        return jsonify({"error": "Invalid query"}),400
+        # validate query
+        if not isinstance(query, str):
+            return jsonify({"error": "Invalid query"}),400
 
-    query = query.strip()
-    if not query:
-        return jsonify({"error":"Invalid query"}),400
+        query = query.strip()
+        if not query:
+            return jsonify({"error":"Invalid query"}),400
 
-    logging.info(f"Received query: {query}")
-    alias_filters = extract_alias_filters(query)
-    logging.info(f"Alias filters found: {alias_filters}")
-    results = search_db(query, alias_filters, db)
-    logging.info(f"Found {len(results)} matching records")
+        logging.info(f"Received query: {query}")
+        alias_filters = extract_alias_filters(query)
+        logging.info(f"Alias filters found: {alias_filters}")
+        results = search_db(query, alias_filters, db)
+        logging.info(f"Found {len(results)} matching records")
 
-    response = []
-    for _, row in results.iterrows():
-        response.append({
-            "business_area": row.get("business_area", ""),
-            "company_name": row.get("company_name", ""),
-            "description": row.get("description", ""),
-            "business_activity": row.get("business_activity", ""),
-            "hq_location": format_location(row),
-            "website_url": row.get("website_url", "")
-        })
-    return jsonify(response)
+        response = []
+        for _, row in results.iterrows():
+            response.append({
+                "business_area": row.get("business_area", ""),
+                "company_name": row.get("company_name", ""),
+                "description": row.get("description", ""),
+                "business_activity": row.get("business_activity", ""),
+                "hq_location": format_location(row),
+                "website_url": row.get("website_url", "")
+            })
+        return jsonify(response)
 except Exception as e:
-logging.error(f"Error handling request: {e}")
-app.logger.error(f"Error handling request: {e}")
-return jsonify({"error": "Internal Server Error"}),500
+    logging.error(f"Error handling request: {e}")
+    app.logger.error(f"Error handling request: {e}")
+    return jsonify({"error": "Internal Server Error"}),500
 
 @app.route("/", methods=["GET"])
 def home():
