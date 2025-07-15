@@ -67,10 +67,8 @@ def extract_alias_filters(user_input):
     # Track already matched phrases
     sorted_phrases = sorted(keyword_aliases.keys(), key=lambda x: -len(x))
     for phrase in sorted_phrases:
-
-    # Match exact phrases with word boundaries first
+        # Match exact phrases with word boundaries first
         if re.search(r'\b' + re.escape(phrase) + r'\b', user_input_lower):
-
             # Extract all column-value pairs mapped to this phrase
             mappings = keyword_aliases[phrase]
 
@@ -85,8 +83,8 @@ def extract_alias_filters(user_input):
                 filters.setdefault(col, set()).add(val)
                 
             user_input_lower = re.sub(r'\b' + re.escape(phrase) + r'\b', ' ', user_input_lower)
-                    
-return filters
+    
+    return filters  # ✅ now correctly indented
 
 def search_db(user_query, alias_filters, db):
     """
@@ -130,16 +128,12 @@ def parse_query():
         query = data.get("query", "")
     
         if not query:
-            return jsonify({"error": "Missing query"}),400
+            return jsonify({"error": "Missing query"}), 400
        
-        # validate query
-        if not isinstance(query, str):
-            return jsonify({"error": "Invalid query"}),400
+        if not isinstance(query, str) or not query.strip():
+            return jsonify({"error": "Invalid query"}), 400
 
         query = query.strip()
-        if not query:
-            return jsonify({"error":"Invalid query"}),400
-
         logging.info(f"Received query: {query}")
         alias_filters = extract_alias_filters(query)
         logging.info(f"Alias filters found: {alias_filters}")
@@ -157,10 +151,11 @@ def parse_query():
                 "website_url": row.get("website_url", "")
             })
         return jsonify(response)
-except Exception as e:
-    logging.error(f"Error handling request: {e}")
-    app.logger.error(f"Error handling request: {e}")
-    return jsonify({"error": "Internal Server Error"}),500
+    
+    except Exception as e:
+        logging.error(f"Error handling request: {e}")
+        app.logger.error(f"Error handling request: {e}")
+        return jsonify({"error": "Internal Server Error"}), 500  # ✅ now inside the function
 
 @app.route("/", methods=["GET"])
 def home():
