@@ -45,6 +45,7 @@ def extract_alias_filters(user_input):
     # Track which phrases we've already matched
     sorted_phrases = sorted(keyword_aliases.keys(), key=lambda x: -len(x))
     for phrase in sorted_phrases:
+        
         # Match exact phrase with word boundaries
         if re.search(r'\b' + re.escape(phrase) + r'\b', user_input_lower):
 
@@ -61,7 +62,7 @@ def extract_alias_filters(user_input):
                     continue  # skip incorrect state mapping
                 filters.setdefault(col, set()).add(val)
 
-            user_input_lower = user_input_lower.replace(phrase, " ")
+            user_input_lower = re.sub(r'\b' + re.escape(phrase) + r'\b', ' ', user_input_lower)
 
     return filters
 
