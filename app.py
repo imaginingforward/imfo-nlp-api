@@ -50,36 +50,15 @@ def extract_alias_filters(user_input):
     """
     user_input_lower = user_input.lower()
     filters = {}
-
-    locations ={
-        "hq_city":[],
-        "hq_state":[],
-        "hq_country":[]
-    }
-    
-    for _, row in keyword_map.iterrows():
-        col = row["Maps To Column"].strip()
-        if col in locations:
-            value = row["Canonical Value"].strip().lower()
-            locations[col].append(value)
-        
-    # Prioritized matching
-    for loc in ["hq_city", "hq_state", "hq_country"]:
-        matched = [token for token in user_input_lower.split() if token in locations[loc]]
-        if matched:
-            filters[loc] = {matched[0]}
-            break
         
     # Track already matched phrases
     sorted_phrases = sorted(keyword_aliases.keys(), key=lambda x: -len(x))
+    
     for phrase in sorted_phrases:
         # Match exact phrases with word boundaries first
         if re.search(r'\b' + re.escape(phrase) + r'\b', user_input_lower):
-            # Extract all column-value pairs mapped to this phrase
-            mappings = keyword_aliases[phrase]
-
-            for col, val in mappings:
-                # Skip location if already matched higher-priority one
+            for col, val in keyword_aliases[phrase]:
+                # Skip country if state/city is matched and skip state if city is matched
                 if col == "hq_country" and ("hq_state" in filters or "hq_city" in filters):
                     continue
                 if col == "hq_state" and "hq_city" in filters:
