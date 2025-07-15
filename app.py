@@ -111,6 +111,7 @@ def extract_filters(query):
     if funding:
         filters['total_funding_raised'] = funding
 
+    logger.info(f"Extracted filters: {filters}")
     return filters
 
 def search(query, filters):
@@ -131,6 +132,9 @@ def search(query, filters):
         if col in db.columns:
             fallback |= db[col].str.contains("|".join(tokens), case=False, na=False)
 
+    logger.info(f"Applying filters: {filters}")
+    logger.info(f"Number of results before fallback: {len(db[mask])}")
+    logger.info(f"Number of results after fallback: {len(db[mask | fallback])}")
     return db[mask | fallback].copy()
 
 def format_location(row):
@@ -171,7 +175,7 @@ def parse():
         return jsonify(response)
 
     except Exception as e:
-        logger.error(f"Request error: {e}")
+        logger.error(f"Request error: {e}", exc_info=True)
         return jsonify({"error": "Internal Server Error"}), 500
 
 @app.route("/")
