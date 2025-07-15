@@ -60,7 +60,7 @@ def extract_alias_filters(user_input):
     for _, row in keyword_map.iterrows():
         col = row["Maps To Column"].strip()
         if col in locations:
-            value = row["Canonical Value"].strip().lower())
+            value = row["Canonical Value"].strip().lower()
             locations[col].append(value)
         
     # Prioritized matching
