@@ -45,7 +45,9 @@ def extract_alias_filters(user_input):
     # Track which phrases we've already matched
     sorted_phrases = sorted(keyword_aliases.keys(), key=lambda x: -len(x))
     for phrase in sorted_phrases:
-        if phrase in user_input_lower:
+        # Match exact phrase with word boundaries
+        if re.search(r'\b' + re.escape(phrase) + r'\b', user_input_lower):
+
             # Extract all column-value pairs mapped to this phrase
             mappings = keyword_aliases[phrase]
 
