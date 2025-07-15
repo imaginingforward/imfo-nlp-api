@@ -109,3 +109,74 @@ def extract_filters(query):
     # Funding filters
     funding = extract_funding_filter(query)
     if funding:
+        filters['total_funding_raised'] = funding
+
+    return filters
+
+def search(query, filters):
+    mask = pd.Series([True] * len(db))
+
+    for col, vals in filters.items():
+        if col == "total_funding_raised":
+            for op, threshold in vals.items():
+                if op == ">":
+                    mask &= db["total_funding_raised"].apply(lambda x: float(x or 0) > threshold)
+        elif col in db.columns:
+            mask &= db[col].isin(vals)
+
+    # Fallback: loose token-based filter if needed
+    tokens = set(re.findall(r"\w+", query.lower()))
+    fallback = pd.Series([False] * len(db))
+    for col in ["description", "business_area", "business_activity", "sector", "hq_city", "hq_state", "hq_country"]:
+        if col in db.columns:
+            fallback |= db[col].str.contains("|".join(tokens), case=False, na=False)
+
+    return db[mask | fallback].copy()
+
+def format_location(row):
+    city = row.get("hq_city", "").title()
+    state = row.get("hq_state", "").lower()
+    country = row.get("hq_country", "").title()
+    if country.lower() == "usa":
+        state_full = display_map.get(state, state).title()
+        return f"{city}, {state_full}" if city else state_full
+    return f"{city}, {country}" if city else country
+
+# ----------------------------- Flask Routes -----------------------------
+
+@app.route("/parse", methods=["POST"])
+def parse():
+    try:
+        data = request.get_json()
+        query = data.get("query", "").strip()
+        if not query:
+            logger.warning("Missing query string")
+            return jsonify({"error": "Missing query"}), 400
+
+        logger.info(f"Received query: {query}")
+        filters = extract_filters(query)
+        logger.info(f"Filters applied: {filters}")
+        results = search(query, filters)
+        logger.info(f"{len(results)} results found")
+
+        response = [{
+            "company_name": row.get("company_name", ""),
+            "business_activity": row.get("business_activity", ""),
+            "business_area": row.get("business_area", ""),
+            "description": row.get("description", ""),
+            "hq_location": format_location(row),
+            "website_url": row.get("website_url", "")
+        } for _, row in results.iterrows()]
+
+        return jsonify(response)
+
+    except Exception as e:
+        logger.error(f"Request error: {e}")
+        return jsonify({"error": "Internal Server Error"}), 500
+
+@app.route("/")
+def home():
+    return "ImFo NLP API is live."
+
+if __name__ == "__main__":
+    app.run(debug=True)
