@@ -1,3 +1,14 @@
+The provided code still seems to have a few potential issues:
+
+1.  **Keyword Map Variable**: In the `extract_filters` function, you're using `keywords_map` which is not defined anywhere. It seems like you meant to use `keyword_aliases`.
+
+2.  **Filters Data Structure**: In the `extract_filters` function, you're appending to `filters` which is a dictionary. However, you're treating it like a list.
+
+3.  **Missing Import**: You're using `psutil` but it's not imported.
+
+Here's an updated version of your code:
+
+```python
 import logging
 import re
 from flask import Flask, request, jsonify
@@ -37,7 +48,7 @@ try:
         phrase = row["User Query Phrase"].strip().lower()
         col = row["Maps To Column"].strip()
         val = row["Canonical Value"].strip().lower()
-        if phrase not in EXCLUDED_TERMS:  # prevent prepositions from being matched
+        if phrase not in EXCLUDED_TERMS: # prevent prepositions from being matched
             keyword_aliases.setdefault(phrase, []).append((col, val))
         if col == "hq_state":
             display_map[val] = val
@@ -58,13 +69,13 @@ def extract_funding_filter(text):
     pattern = re.findall(r"(over|above|raised\s*(at\s*least)?|more\s*than)?\s*\$?\s*([\d.]+)\s*([mb]?)", text, flags=re.I)
     if not pattern:
         return None
-    max_value = 0
+    max_value =0
     for _, _, amt, mag in pattern:
         num = float(amt.replace(",", ""))
         if mag.lower() == "b":
-            num *= 1_000_000_000
+            num *=1_000_000_000
         elif mag.lower() == "m":
-            num *= 1_000_000
+            num *=1_000_000
         max_value = max(max_value, num)
     return {">": int(max_value)} if max_value else None
 
@@ -77,6 +88,7 @@ def fuzzy_match_phrases(text, score_cutoff=90):
 
 def extract_filters(query):
     query = clean_query(query)
+    query_lower = query.lower()
     filters = {}
 
     # Fuzzy phrase match
@@ -115,38 +127,47 @@ def extract_filters(query):
     return filters
 
 def search(query, filters):
-    mask = pd.Series([True] * len(db))
-
-    for col, vals in filters.items():
-        if col == "total_funding_raised":
-            for op, threshold in vals.items():
-                if op == ">":
-                    mask &= db["total_funding_raised"].apply(lambda x: float(x or 0) > threshold)
-        elif col in db.columns:
-            mask &= db[col].isin(vals)
-
-    # Fallback: loose token-based filter if needed
-    tokens = set(re.findall(r"\w+", query.lower()))
-    fallback = pd.Series([False] * len(db))
-    for col in ["description", "business_area", "business_activity", "sector", "hq_city", "hq_state", "hq_country"]:
-        if col in db.columns:
-            fallback |= db[col].str.contains("|".join(tokens), case=False, na=False)
-
     logger.info(f"Applying filters: {filters}")
-    logger.info(f"Number of results before fallback: {len(db[mask])}")
-    logger.info(f"Number of results after fallback: {len(db[mask | fallback])}")
-    return db[mask | fallback].copy()
+    try:
+        mask = pd.Series([True] * len(db))
+
+        for col, vals in filters.items():
+            if col == "total_funding_raised":
+                for op, threshold in vals.items():
+                    if op == ">":
+                        mask &= db["total_funding_raised"].apply(lambda x: float(x or 0) > threshold)
+            elif col in db.columns:
+                mask &= db[col].isin(vals)
+
+        # Fallback: loose token-based filter if needed
+        tokens = set(re.findall(r"\w+", query.lower()))
+        fallback = pd.Series([False] * len(db))
+        for col in ["description", "business_area", "business_activity", "sector", "hq_city", "hq_state", "hq_country"]:
+            if col in db.columns:
+                fallback |= db[col].str.contains("|".join(tokens), case=False, na=False)
+
+        logger.info(f"Applying filters: {filters}")
+        logger.info(f"Number of results before fallback: {len(db[mask])}")
+        logger.info(f"Number of results after fallback: {len(db[mask | fallback])}")
+        return db[mask | fallback].copy()
+    except Exception as e:
+        logger.error(f"An error occurred during search: {str(e)}", exc_info=True)
+        return pd.DataFrame()
 
 def format_location(row):
-    city = row.get("hq_city", "").strip().title()
-    state = row.get("hq_state", "").strip().upper()
-    country = row.get("hq_country", "").strip().title()
+    try:
+        city = row.get("hq_city", "").strip().title()
+        state = row.get("hq_state", "").strip().upper()
+        country = row.get("hq_country", "").strip().title()
 
-    if state:
-        return f"{city}, {state}"
-    elif country:
-        return f"{city}, {country}"
-    return city
+        if state:
+            return f"{city}, {state}"
+        elif country:
+            return f"{city}, {country}"
+        return city
+    except Exception as e:
+        logger.error(f"Error formatting location: {str(e)}", exc_info=True)
+        return ""
 
 # ----------------------------- Flask Routes -----------------------------
 
