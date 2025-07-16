@@ -5,7 +5,7 @@ from flask_cors import CORS
 import pandas as pd
 import spacy
 from rapidfuzz import process, fuzz
-
+from spacy.matcher import PhraseMatcher
 # ----------------------------- Initialization -----------------------------
 
 # Logging setup
@@ -21,6 +21,18 @@ nlp = spacy.load("en_core_web_sm")
 
 # Stopwords and prepositions to exclude from alias matching
 EXCLUDED_TERMS = {"in", "from", "near", "at", "around", "on", "by"}
+
+# Define Acronyms
+matcher = PhraseMatcher(nlp.vocab, attr="ORTH")  # Case-sensitive, token-based
+acronyms = ["GNSS", "ISR", "PNT", "SAR", "SBIR", "SSA", "AFWERX", "DIU", "DARPA", "DOD", "YC", "SFA"]
+
+# Convert to Doc patterns
+patterns = [nlp.make_doc(acr) for acr in acronyms]
+matcher.add("ACRONYM", patterns)
+
+# Load Gazeteer
+gazetteer_df = pd.read_csv("gazetteer.csv").fillna("")
+gazetteer = dict(zip(gazetteer_df["name"].str.lower(), gazetteer_df["type"].str.lower()))
 
 # Load data
 try:
@@ -75,23 +87,35 @@ def fuzzy_match_phrases(text, score_cutoff=90):
             matched.append(phrase)
     return matched
 
+def safe_set_filter(filters, col, val, origin, origin_map):
+    # Respect NER/gazetteer priority over fuzzy
+        if col in filters:
+            if origin_map[col] == "NER" and origin in == ["fuzzy", "acronym"]:
+                return
+            if col == "hq_country":
+                filters.pop("hq_state", None)
+                filters.pop("hq_city", None)
+                origin_map.pop("hq_state", None)
+                origin_map.pop("hq_city", None)
+            elif col == "hq_state":
+                    filters.pop("hq_city", None)
+                    origin_map.pop("hq_city", None)
+            filters[col] ={val}
+            origin_map[col] = origin
+    
 def extract_filters(query):
     query = clean_query(query)
     query_lower = query.lower()
     filters = {}
-
-    # Fuzzy phrase match
+    filters_origin = {}
+    
+    # 1 - Fuzzy phrase match
     matched_aliases = fuzzy_match_phrases(query)
     for phrase in matched_aliases:
         for col, val in keyword_aliases[phrase]:
-            # Location hierarchy checks
-            if col == "hq_country" and ("hq_state" in filters or "hq_city" in filters):
-                continue
-            if col == "hq_state" and "hq_city" in filters:
-                continue
-            filters.setdefault(col, set()).add(val)
-
-    # Named Entity Recognition
+            safe_set_filter(filters, col, val, "fuzzy", filter_origin)
+                
+    # 2 - Named Entity Recognition NER
     doc = nlp(query)
     for ent in doc.ents:
         if ent.label_ in ["GPE", "LOC"]:
@@ -100,13 +124,22 @@ def extract_filters(query):
                 continue
             if loc in gazetteer:
                 if gazetteer[loc] == "country":
-                    filters["hq_country"] = {loc}
+                    safe_set_filter(filters, "hq_country", loc, "NER", filter_origin)
                 elif gazetteer[loc] == "city":
-                    filters["hq_city"] = {loc}
+                    safe_set_filter(filters, "hq_country", loc, "NER", filter_origin)
                 elif gazetteer[loc] == "state":
-                    filters["hq_state"] = {loc}
+                    safe_set_filter(filters, "hq_country", loc, "NER", filter_origin)
 
-    # Funding filters
+    # 3 - Acronym match
+    matches = matcher(doc)
+    for match_id, start, end in matches:
+        span = doc[start:end]
+        token = span.text.strip().upper()
+        if token in keyword_aliases:
+            for cold, val in keyword_aliases[token]:
+            safe_set_filter(filters, col, val, "acronym", filter_origin)
+
+    # 4 - Funding filters
     funding = extract_funding_filter(query)
     if funding:
         filters['total_funding_raised'] = funding
