@@ -88,20 +88,25 @@ def fuzzy_match_phrases(text, score_cutoff=80):
     return matched
 
 def safe_set_filter(filters, col, val, origin, origin_map):
-    # Respect NER/gazetteer priority over fuzzy
-        if col in filters:
-            if origin_map[col] == "NER" and origin in ["fuzzy", "acronym"]:
-                return
-            if col == "hq_country":
-                filters.pop("hq_state", None)
-                filters.pop("hq_city", None)
-                origin_map.pop("hq_state", None)
-                origin_map.pop("hq_city", None)
-            elif col == "hq_state":
-                    filters.pop("hq_city", None)
-                    origin_map.pop("hq_city", None)
-            filters[col] ={val}
-            origin_map[col] = origin
+    # Set if not present
+    if col not in filters:
+        filters[col] = {val}
+        origin_map[col] = origin
+        return
+    # If already set, respect NER/gazetteer priority over fuzzy
+    if col in filters:
+        if origin_map[col] == "NER" and origin in ["fuzzy", "acronym"]:
+            return
+        if col == "hq_country":
+            filters.pop("hq_state", None)
+            filters.pop("hq_city", None)
+            origin_map.pop("hq_state", None)
+            origin_map.pop("hq_city", None)
+        elif col == "hq_state":
+            filters.pop("hq_city", None)
+            origin_map.pop("hq_city", None)
+        filters[col] ={val}
+        origin_map[col] = origin
     
 def extract_filters(query):
     query = clean_query(query)
