@@ -80,7 +80,7 @@ def extract_funding_filter(text):
         max_value = max(max_value, num)
     return {">": int(max_value)} if max_value else None
 
-def fuzzy_match_phrases(text, score_cutoff=90):
+def fuzzy_match_phrases(text, score_cutoff=80):
     matched = []
     for phrase, score, _ in process.extract(text, all_alias_phrases, scorer=fuzz.partial_ratio, score_cutoff=score_cutoff):
         if phrase not in EXCLUDED_TERMS:
@@ -108,9 +108,14 @@ def extract_filters(query):
     query_lower = query.lower()
     filters = {}
     filter_origin = {}
+
+    logger.info(f"All alias phrases: {all_alias_phrases}")
+    logger.info(f"All keyword aliases: {keyword_aliases}")
+    logger.info(f"User query (cleaned): '{query}'")
     
     # 1 - Fuzzy phrase match
     matched_aliases = fuzzy_match_phrases(query)
+    logger.info(f"Matched fuzzy aliases: {matched_aliases}")
     for phrase in matched_aliases:
         for col, val in keyword_aliases[phrase]:
             safe_set_filter(filters, col, val, "fuzzy", filter_origin)
