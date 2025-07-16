@@ -107,7 +107,7 @@ def extract_filters(query):
     query = clean_query(query)
     query_lower = query.lower()
     filters = {}
-    filters_origin = {}
+    filter_origin = {}
     
     # 1 - Fuzzy phrase match
     matched_aliases = fuzzy_match_phrases(query)
