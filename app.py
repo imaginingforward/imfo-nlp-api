@@ -90,7 +90,7 @@ def fuzzy_match_phrases(text, score_cutoff=90):
 def safe_set_filter(filters, col, val, origin, origin_map):
     # Respect NER/gazetteer priority over fuzzy
         if col in filters:
-            if origin_map[col] == "NER" and origin in == ["fuzzy", "acronym"]:
+            if origin_map[col] == "NER" and origin in ["fuzzy", "acronym"]:
                 return
             if col == "hq_country":
                 filters.pop("hq_state", None)
@@ -136,7 +136,7 @@ def extract_filters(query):
         span = doc[start:end]
         token = span.text.strip().upper()
         if token in keyword_aliases:
-            for cold, val in keyword_aliases[token]:
+            for col, val in keyword_aliases[token]:
             safe_set_filter(filters, col, val, "acronym", filter_origin)
 
     # 4 - Funding filters
