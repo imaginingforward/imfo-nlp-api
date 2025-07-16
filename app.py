@@ -138,13 +138,15 @@ def search(query, filters):
     return db[mask | fallback].copy()
 
 def format_location(row):
-    city = row.get("hq_city", "").title()
-    state = row.get("hq_state", "").lower()
-    country = row.get("hq_country", "").title()
-    if country.lower() == "usa":
-        state_full = display_map.get(state, state).title()
-        return f"{city}, {state_full}" if city else state_full
-    return f"{city}, {country}" if city else country
+    city = row.get("hq_city", "").strip().title()
+    state = row.get("hq_state", "").strip().upper()
+    country = row.get("hq_country", "").strip().title()
+
+    if state:
+        return f"{city}, {state}"
+    elif country:
+        return f"{city}, {country}"
+    return city
 
 # ----------------------------- Flask Routes -----------------------------
 
