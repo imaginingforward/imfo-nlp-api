@@ -6,11 +6,20 @@ space startups,sector,Space Tech
 startups,sector,Space Tech
 companies,sector,Space Tech
 funding,latest_funding_stage,*
+raised,latest_funding_raised ,*
 SAR,business_activity,synthetic aperture radar
 GNSS,business_activity,global navigation satellite system
 SSA,business_activity,space situational awareness
 PNT,business_activity,position navigation tracking
 ISR,business_activity,"intelligence, surveillance, reconnaissance"
+IFC,business_activity,in flight connectivity
+DIU Blue List,funding_round,
+AFWERX,funding_round,
+SBIR/STRR,funding_round,
+DOD,notable_partners,
+DIU,notable_partners,
+DARPA,notable_partners,
+USSF,notable_partners,
 LEO,business_activity,low earth orbit
 VLEO,business_activity,very low earth orbit
 HEO,business_activity,high earth orbit
@@ -43,11 +52,20 @@ satellite producer,business_area,Launch & Payload
 orbital vehicle,business_area,Launch & Payload
 LA,hq_city,Los Angeles
 LAX,hq_city,Los Angeles
+LOS ANGELES,hq_city,Los Angeles
+los angeles,hq_city,Los Angeles
+Los Angeles,hq_city,Los Angeles
 NY,hq_city,New York City
 NYC,hq_city,New York City
 SF,hq_city,San Francisco
 SFO,hq_city,San Francisco
 Bangalore,hq_city,Bengaluru
+cali,hq_state,California
+california,hq_state,California
+CALIFORNIA,hq_state,California
 UAE,hq_country,United Arab Emirates
 UK,hq_country,England
 USA,hq_country,United States of America
+Germany,hq_country,Germany
+GERMANY,hq_country,Germany
+germany,hq_country,Germany
