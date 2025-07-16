@@ -1,0 +1,471 @@
+name,type
+orange county,city
+el segundo,city
+centennial,city
+los angeles,city
+san francisco,city
+houston,city
+hyattsville,city
+irvine,city
+san mateo,city
+burlingame,city
+denver,city
+kent,city
+adelaide,city
+bothell,city
+longmont,city
+bangalore,city
+pasadena,city
+boston,city
+seattle,city
+montreal,city
+hawthorne,city
+altadena,city
+sunnyvale,city
+huntington beach,city
+boca raton,city
+edmonton,city
+carlsbad,city
+itasca,city
+east providence,city
+lanham,city
+dartmouth,city
+melbourne,city
+falls church,city
+niagara falls,city
+mojave,city
+eveleigh,city
+sydney,city
+ottawa,city
+chicago,city
+neuchatel,city
+palo alto,city
+alameda,city
+redmond,city
+halifax,city
+toronto,city
+concord,city
+cambridge,city
+herndon,city
+kockelscheuer,city
+toulouse,city
+tokyo,city
+wroclaw,city
+rennes,city
+etoy,city
+vancouver,city
+helibronn,city
+turin,city
+didcot,city
+london,city
+auckland,city
+huntsville,city
+tukwila,city
+arlington,city
+cannes,city
+berlin,city
+massy,city
+milan,city
+lulea,city
+tromso,city
+brno,city
+betzdorf,city
+midland,city
+oxnard,city
+phoenix,city
+singapore,city
+lausanne,city
+madrid,city
+munich,city
+barcelona,city
+calgary,city
+broomfield,city
+rockville,city
+long beach,city
+austin,city
+tsukuba,city
+oxfordshire,city
+tucson,city
+boulder,city
+miami,city
+paris,city
+littleton,city
+vinius,city
+dnipro,city
+englewood,city
+espoo,city
+delft,city
+mountain view,city
+atlanta,city
+hyderabad,city
+alicante,city
+san diego,city
+helsinki,city
+forres,city
+santa monica,city
+menlo park,city
+fort walton beach,city
+tampa,city
+colorado springs,city
+north kingstown,city
+berkeley,city
+new york,city
+quebec,city
+waterloo,city
+santa barbara,city
+albuquerque,city
+dallas,city
+incline village,city
+mclean,city
+tel aviv,city
+kirkland,city
+san jose,city
+orlando,city
+foster city,city
+hanover,city
+tallinn,city
+hoboken,city
+oakland,city
+portland,city
+limassol,city
+geneva,city
+newport beach,city
+ann arbor,city
+ellicott city,city
+addison,city
+jersey city,city
+somerville,city
+baltimore,city
+redwood city,city
+washington,city
+newton,city
+waltham,city
+bellevue,city
+abingdon,city
+milpitas,city
+santa clara,city
+covina,city
+bethesda,city
+melville,city
+fulton,city
+sarasota,city
+redwood shores,city
+bucharest,city
+campbell,city
+cologne,city
+salt lake city,city
+northbrook,city
+columbus,city
+philadelphia,city
+stanford,city
+los altos,city
+hod hasharon,city
+tempe,city
+nashville,city
+ghent,city
+grembergen,city
+plano,city
+tulsa,city
+montpellier,city
+alexandria,city
+pleasanton,city
+boise,city
+san rafael,city
+pittsburgh,city
+burlington,city
+münchen,city
+minneapolis,city
+rio grande do sul,city
+coral gables,city
+doylestown,city
+elizabethtown,city
+stow,city
+reston,city
+walnut,city
+bath,city
+dubai,city
+cheltenham,city
+newark,city
+morrisville,city
+the hague,city
+leesburg,city
+lexington,city
+santa ana,city
+richardson,city
+saint john,city
+taipei,city
+hem,city
+mill valley,city
+silver spring,city
+culver city,city
+somerset,city
+ra'anana,city
+bozeman,city
+karlskrona,city
+reading,city
+suresnes,city
+utrecht,city
+la jolla,city
+zug,city
+fremont,city
+mumbai,city
+alpharetta,city
+manassas,city
+weehawken,city
+be'er sheva,city
+gothenburg,city
+detroit,city
+copenhagen,city
+beersheba,city
+bochum,city
+são paulo,city
+nyack,city
+bristol,city
+glendale,city
+middletown,city
+charlottesville,city
+wilmington,city
+oxford,city
+lewes,city
+antwerp,city
+columbia,city
+petah tiqva,city
+college park,city
+augusta,city
+rochester,city
+amsterdam,city
+victoria,city
+manchester,city
+yverdon-les-bains,city
+warsaw,city
+puteaux,city
+rehovot,city
+seongdong,city
+west chester,city
+canberra,city
+hamburg,city
+pessac,city
+clayton,city
+cork,city
+woodbridge,city
+annapolis,city
+spokane,city
+cupertino,city
+chatswood,city
+porto,city
+bloomfield hills,city
+bengaluru,city
+ramla,city
+indianapolis,city
+frankfurt,city
+north vancouver,city
+st louis,city
+carrickmines,city
+vienna,city
+marietta,city
+dover,city
+snohomish,city
+brooklyn,city
+lehi,city
+jerusalem,city
+woburn,city
+dublin,city
+san sebastian,city
+stockholm,city
+beijing,city
+buenos aires,city
+minnetonka,city
+college station,city
+new paltz,city
+bedford,city
+den haag,city
+zürich,city
+durango,city
+charleston,city
+york,city
+sheffield,city
+linz,city
+caesarea,city
+baar,city
+clinton,city
+hong kong,city
+eden prairie,city
+holmdel,city
+ithaca,city
+nice,city
+santiago,city
+chandler,city
+lisbon,city
+seoul,city
+ham,city
+marseille,city
+emeryville,city
+dayton,city
+nelson,city
+city of london,city
+rome,city
+delaware city,city
+roma,city
+marlborough,city
+lyon,city
+elkridge,city
+hangzhou,city
+chatham,city
+bromma,city
+irving,city
+haifa,city
+kyiv,city
+bilbao,city
+cesson-sévigné,city
+tarrytown,city
+clearwater,city
+lakeland,city
+south san francisco,city
+aarhus,city
+reno,city
+edinburgh,city
+doha,city
+jacksonville beach,city
+aveiro,city
+overland park,city
+riyadh,city
+kitchener,city
+waterford,city
+oslo,city
+las vegas,city
+prague,city
+brisbane,city
+rishon le zion,city
+gurgaon,city
+fyshwick,city
+schaffhausen,city
+cosmos,city
+secaucus,city
+raleigh,city
+birmingham,city
+la défense,city
+porto alegre,city
+rio de janeiro,city
+brighton,city
+seongnam,city
+monroe,city
+louisville,city
+australian capital territory,city
+neuilly-sur-seine,city
+california city,city
+yeoksamdong,city
+kuala lumpur,city
+belfast,city
+cinnaminson,city
+neptune,city
+markham,city
+tacoma,city
+mesa,city
+westbrook,city
+rancho dominguez,city
+north logan,city
+holland,city
+hanwell,city
+new baltimore,city
+orange,city
+bayern,city
+aurburn,city
+madera,city
+stuttgart,city
+paramount,city
+altus,city
+exton,city
+cincinnati,city
+cidu district keelung city,city
+clarksville,city
+anaheim,city
+jenison,city
+traverse city,city
+bohemia,city
+telford,city
+stafford springs,city
+milford,city
+brea,city
+pacific,city
+chagrin falls,city
+california,state
+colorado,state
+texas,state
+new york,state
+washington,state
+massachusetts,state
+florida,state
+illinois,state
+rhode island,state
+maryland,state
+virginia,state
+england,state
+alabama,state
+arizona,state
+georgia,state
+new mexico,state
+nevada,state
+new jersey,state
+oregon,state
+michigan,state
+district of columbia,state
+utah,state
+ohio,state
+pennsylvania,state
+tennessee,state
+oklahoma,state
+idaho,state
+minnesota,state
+kentucky,state
+north carolina,state
+montana,state
+delaware,state
+indiana,state
+missouri,state
+south carolina,state
+kansas,state
+maine,state
+new hampshire,state
+connecticut,state
+usa,country
+sweden,country
+england,country
+germany,country
+japan,country
+australia,country
+india,country
+canada,country
+switzerland,country
+luxembourg,country
+france,country
+poland,country
+italy,country
+new zealand,country
+norway,country
+czech,country
+singapore,country
+spain,country
+lithuania,country
+ukraine,country
+finland,country
+netherlands,country
+scotland,country
+israel,country
+estonia,country
+cyprus,country
+romania,country
+belgium,country
+brazil,country
+uae,country
+taiwan,country
+denmark,country
+south korea,country
+ireland,country
+portugal,country
+china,country
+argentina,country
+austria,country
+chile,country
+qatar,country
+saudi arabia,country
+malaysia,country

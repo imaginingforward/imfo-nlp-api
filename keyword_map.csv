@@ -3,7 +3,10 @@ space,sector,Space Tech
 space company,sector,Space Tech
 space companies,sector,Space Tech
 space startups,sector,Space Tech
+startups,sector,Space Tech
+companies,sector,Space Tech
 funding,latest_funding_stage,*
+raised,latest_funding_raised ,*
 SAR,business_activity,synthetic aperture radar
 GNSS,business_activity,global navigation satellite system
 SSA,business_activity,space situational awareness
@@ -24,6 +27,7 @@ GEO,business_activity,geostationary equatorial orbit
 MEO,business_activity,medium earth orbit
 VTOL,business_activity,vertical take-off and landing
 VTVL,business_activity,"vertical take-off, vertical landing"
+UAV,business_activity,unmanned aerial vehicle
 UAV,business_area,Drones & Unmanned Vehicles
 drone,business_area,Drones & Unmanned Vehicles
 optical,business_area,Satellite Communications & Networking
@@ -47,7 +51,7 @@ satellite manufacturer,business_area,Launch & Payload
 satellite producer,business_area,Launch & Payload
 orbital vehicle,business_area,Launch & Payload
 LA,hq_city,Los Angeles
-LAX,hq_city,Los Angeles
+socal,hq_city,Los Angeles
 LOS ANGELES,hq_city,Los Angeles
 los angeles,hq_city,Los Angeles
 Los Angeles,hq_city,Los Angeles
@@ -55,6 +59,7 @@ NY,hq_city,New York City
 NYC,hq_city,New York City
 SF,hq_city,San Francisco
 SFO,hq_city,San Francisco
+bay area,hq_city,San Francisco
 Bangalore,hq_city,Bengaluru
 cali,hq_state,California
 california,hq_state,California
