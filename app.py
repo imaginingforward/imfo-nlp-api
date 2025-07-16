@@ -98,14 +98,13 @@ def extract_filters(query):
             loc = ent.text.strip().lower()
             if loc in EXCLUDED_TERMS:
                 continue
-            if loc in keyword_aliases:
-                for col, val in keyword_aliases[loc]:
-                    # Apply the same hierarchy rule
-                    if col == "hq_country" and ("hq_state" in filters or "hq_city" in filters):
-                        continue
-                    if col == "hq_state" and "hq_city" in filters:
-                        continue
-                    filters.setdefault(col, set()).add(val)
+            if loc in gazetteer:
+                if gazetteer[loc] == "country":
+                    filters["hq_country"] = {loc}
+                elif gazetteer[loc] == "city":
+                    filters["hq_city"] = {loc}
+                elif gazetteer[loc] == "state":
+                    filters["hq_state"] = {loc}
 
     # Funding filters
     funding = extract_funding_filter(query)
