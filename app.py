@@ -137,7 +137,7 @@ def extract_filters(query):
         token = span.text.strip().upper()
         if token in keyword_aliases:
             for col, val in keyword_aliases[token]:
-            safe_set_filter(filters, col, val, "acronym", filter_origin)
+                safe_set_filter(filters, col, val, "acronym", filter_origin)
 
     # 4 - Funding filters
     funding = extract_funding_filter(query)
