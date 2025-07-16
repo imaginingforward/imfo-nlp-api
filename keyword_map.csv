@@ -3,10 +3,7 @@ space,sector,Space Tech
 space company,sector,Space Tech
 space companies,sector,Space Tech
 space startups,sector,Space Tech
-startups,sector,Space Tech
-companies,sector,Space Tech
 funding,latest_funding_stage,*
-raised,latest_funding_raised ,*
 SAR,business_activity,synthetic aperture radar
 GNSS,business_activity,global navigation satellite system
 SSA,business_activity,space situational awareness
@@ -27,7 +24,6 @@ GEO,business_activity,geostationary equatorial orbit
 MEO,business_activity,medium earth orbit
 VTOL,business_activity,vertical take-off and landing
 VTVL,business_activity,"vertical take-off, vertical landing"
-UAV,business_activity,unmanned aerial vehicle
 UAV,business_area,Drones & Unmanned Vehicles
 drone,business_area,Drones & Unmanned Vehicles
 optical,business_area,Satellite Communications & Networking
