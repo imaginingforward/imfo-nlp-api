@@ -1,14 +1,3 @@
-The provided code still seems to have a few potential issues:
-
-1.  **Keyword Map Variable**: In the `extract_filters` function, you're using `keywords_map` which is not defined anywhere. It seems like you meant to use `keyword_aliases`.
-
-2.  **Filters Data Structure**: In the `extract_filters` function, you're appending to `filters` which is a dictionary. However, you're treating it like a list.
-
-3.  **Missing Import**: You're using `psutil` but it's not imported.
-
-Here's an updated version of your code:
-
-```python
 import logging
 import re
 from flask import Flask, request, jsonify
