@@ -51,10 +51,8 @@ satellite manufacturer,business_area,Launch & Payload
 satellite producer,business_area,Launch & Payload
 orbital vehicle,business_area,Launch & Payload
 LA,hq_city,Los Angeles
+LAX,hq_city,Los Angeles
 socal,hq_city,Los Angeles
-LOS ANGELES,hq_city,Los Angeles
-los angeles,hq_city,Los Angeles
-Los Angeles,hq_city,Los Angeles
 NY,hq_city,New York City
 NYC,hq_city,New York City
 SF,hq_city,San Francisco
@@ -62,11 +60,8 @@ SFO,hq_city,San Francisco
 bay area,hq_city,San Francisco
 Bangalore,hq_city,Bengaluru
 cali,hq_state,California
-california,hq_state,California
-CALIFORNIA,hq_state,California
 UAE,hq_country,United Arab Emirates
 UK,hq_country,England
 USA,hq_country,United States of America
-Germany,hq_country,Germany
-GERMANY,hq_country,Germany
-germany,hq_country,Germany
+deutschland,hq_country,Germany
+allemagne,hq_country,Germany
