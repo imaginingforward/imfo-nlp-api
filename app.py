@@ -108,57 +108,82 @@ def safe_set_filter(filters, col, val, origin, origin_map):
         filters[col] ={val}
         origin_map[col] = origin
     
-def extract_filters(query):
-    query = clean_query(query)
-    query_lower = query.lower()
+def extract_filters(query: str):
+    query_clean = clean_query(query)
     filters = {}
     filter_origin = {}
+    matched_tokens = set()
+    free_text_terms = []
 
     # Debug if keywords is being extracted
     # logger.info(f"All alias phrases: {all_alias_phrases}")
     # logger.info(f"All keyword aliases: {keyword_aliases}")
-    # logger.info(f"User query (cleaned): '{query}'")
+    # logger.info(f"User query (cleaned): '{query_clean}'")
     
     # 1 - Fuzzy phrase match
-    matched_aliases = fuzzy_match_phrases(query)
+    matched_aliases = fuzzy_match_phrases(query_clean)
     logger.info(f"Matched fuzzy aliases: {matched_aliases}")
     for phrase in matched_aliases:
+        # mark as matched, for multi-word expressions
+        matched_tokens.update(phrase.split())
         for col, val in keyword_aliases[phrase]:
             safe_set_filter(filters, col, val, "fuzzy", filter_origin)
-                
+
     # 2 - Named Entity Recognition NER
-    doc = nlp(query)
+    doc = nlp(query_clean)
     for ent in doc.ents:
         if ent.label_ in ["GPE", "LOC"]:
             loc = ent.text.strip().lower()
             if loc in EXCLUDED_TERMS:
                 continue
+            matched_tokens.update(loc.split())
             if loc in gazetteer:
-                if gazetteer[loc] == "country":
-                    safe_set_filter(filters, "hq_country", loc, "NER", filter_origin)
-                elif gazetteer[loc] == "city":
-                    safe_set_filter(filters, "hq_country", loc, "NER", filter_origin)
-                elif gazetteer[loc] == "state":
-                    safe_set_filter(filters, "hq_country", loc, "NER", filter_origin)
-
-    # 3 - Acronym match
+                loc_type = gazetteer[loc]
+                safe_set_filter(filters, f"hq_{loc_type}", loc, "NER", filter_origin)
+                
+    # 3 - Acronym match, EXACT for cast-sensitive
     matches = matcher(doc)
     for match_id, start, end in matches:
         span = doc[start:end]
         token = span.text.strip().upper()
+        matched_tokens.add(token.lower())
         if token in keyword_aliases:
             for col, val in keyword_aliases[token]:
                 safe_set_filter(filters, col, val, "acronym", filter_origin)
 
     # 4 - Funding filters
-    funding = extract_funding_filter(query)
+    funding = extract_funding_filter(query_clean)
     if funding:
         filters['total_funding_raised'] = funding
+            
+    # 5 - Check in gazetteer
+    for phrase in gazetteer.keys():
+        phrase_tokens = set(phrase.lower().split()) 
+        # Skip if matched in NER
+        if phrase in matched_tokens:
+            continue
+            if phrase in query_clean.lower():
+                loc_type = gazetteer[phrase]
+                safe_set_filter(filters,f"hq_{loc_type}", phrase, "gazetteer",filter_origin)
+                matched_tokens.update(phrase_lower)
 
+    # 6 - All unmatched tokens/phrases as free-text
+    all_tokens = set(query_clean.split())
+    for token in all_tokens:
+        if token not in matched_tokens and token not in EXCLUDED_TERMS:
+            free_text_terms.append(token)
+
+    #7 - Collapse filter sets to scalars (first value or keep sets if multi-valued)
+    simple_filters = {k: (list(v)[0] if isinstance(v, set) and len(v) == 1 else v) for k, v in filters.items()}
+        
     logger.info(f"Extracted filters: {filters}")
-    return filters
+    logger.info(f"Free-text:{free_text_terms}")
+    return {
+        "filters": filters,
+        "free_text_terms": free_text_terms
+    }
 
-def search(query, filters):
+def search(query_clean, filters):
     try:
         mask = pd.Series([True] * len(db))
 
@@ -171,7 +196,7 @@ def search(query, filters):
                 mask &= db[col].isin(vals)
 
         # Fallback: loose token-based filter if needed
-        tokens = set(re.findall(r"\w+", query.lower()))
+        tokens = set(re.findall(r"\w+", query_clean.lower()))
         fallback = pd.Series([False] * len(db))
         for col in ["description", "business_area", "business_activity", "sector", "hq_city", "hq_state", "hq_country"]:
             if col in db.columns:
@@ -207,15 +232,19 @@ def format_location(row):
 def parse():
     try:
         data = request.get_json()
-        query = data.get("query", "").strip()
-        if not query:
+        query_clean = data.get("query_clean", "").strip()
+        if not query_clean:
             logger.warning("Missing query string")
             return jsonify({"error": "Missing query"}), 400
 
-        logger.info(f"Received query: {query}")
-        filters = extract_filters(query)
+        logger.info(f"Received query: {query_clean}")
+        parsed_query = extract_filters(query_clean)
+        filters = parsed_query["filters"]
+        free_text_terms = parsed_query["free_text_terms"]
         logger.info(f"Filters applied: {filters}")
-        results = search(query, filters)
+        logger.info(f"Free text terms applied: {free_text_terms}")
+        
+        results = search(query_clean, filters, free_text_terms)
         logger.info(f"{len(results)} results found")
 
         response = [{
