@@ -114,9 +114,10 @@ def extract_filters(query):
     filters = {}
     filter_origin = {}
 
-    logger.info(f"All alias phrases: {all_alias_phrases}")
-    logger.info(f"All keyword aliases: {keyword_aliases}")
-    logger.info(f"User query (cleaned): '{query}'")
+    # Debug if keywords is being extracted
+    # logger.info(f"All alias phrases: {all_alias_phrases}")
+    # logger.info(f"All keyword aliases: {keyword_aliases}")
+    # logger.info(f"User query (cleaned): '{query}'")
     
     # 1 - Fuzzy phrase match
     matched_aliases = fuzzy_match_phrases(query)
@@ -158,7 +159,6 @@ def extract_filters(query):
     return filters
 
 def search(query, filters):
-    logger.info(f"Applying filters: {filters}")
     try:
         mask = pd.Series([True] * len(db))
 
@@ -177,6 +177,7 @@ def search(query, filters):
             if col in db.columns:
                 fallback |= db[col].str.contains("|".join(tokens), case=False, na=False)
 
+        # Debug if fuzzy match works
         logger.info(f"Applying filters: {filters}")
         logger.info(f"Number of results before fallback: {len(db[mask])}")
         logger.info(f"Number of results after fallback: {len(db[mask | fallback])}")
