@@ -6,6 +6,7 @@ import pandas as pd
 import spacy
 from rapidfuzz import process, fuzz
 from spacy.matcher import PhraseMatcher
+from collections.abs import Iterable
 # ----------------------------- Initialization -----------------------------
 
 # Logging setup
