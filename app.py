@@ -165,7 +165,7 @@ def extract_filters(query: str):
         if phrase in query_clean.lower():
             loc_type = gazetteer[phrase]
             safe_set_filter(filters,f"hq_{loc_type}", phrase, "gazetteer",filter_origin)
-            matched_tokens.update(phrase_lower)
+            matched_tokens.update(phrase.lower)
 
     # 6 - All unmatched tokens/phrases as free-text
     all_tokens = set(query_clean.split())
@@ -183,7 +183,7 @@ def extract_filters(query: str):
         "free_text_terms": free_text_terms
     }
 
-def search(query_clean, filters):
+def search(query_clean, filters, free_text_terms):
     try:
         mask = pd.Series([True] * len(db))
 
