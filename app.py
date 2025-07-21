@@ -85,7 +85,8 @@ def fuzzy_match_phrases(text, score_cutoff=80):
     matched = []
     for phrase, score, _ in process.extract(text, all_alias_phrases, scorer=fuzz.partial_ratio, score_cutoff=score_cutoff):
         if phrase not in EXCLUDED_TERMS:
-            matched.append(phrase)
+            if f" {phrase} " in f" {text.lower()} ":
+                matched.append(phrase)
     return matched
 
 def safe_set_filter(filters, col, val, origin, origin_map):
@@ -162,7 +163,7 @@ def extract_filters(query: str):
         if phrase in query_clean.lower():
             loc_type = gazetteer[phrase]
             safe_set_filter(filters,f"hq_{loc_type}", phrase, "gazetteer",filter_origin)
-            matched_tokens.update(phrase.lower)
+            matched_tokens.update(phrase.lower().split())
 
     # 6 - All unmatched tokens/phrases as free-text
     all_tokens = set(query_clean.split())
