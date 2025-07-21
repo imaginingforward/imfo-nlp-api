@@ -186,35 +186,49 @@ def extract_filters(query: str):
 
 def search(query_clean, filters, free_text_terms):
     try:
-        mask = pd.Series([True] * len(db))
-
+        df = db.copy()
+        logger.info(f"Applying filters: {filters}")
+        
+        # 1 - Apply structured filters
+        mask = pd.Series([True] * len(df))
         for col, vals in filters.items():
             if col == "total_funding_raised":
                 for op, threshold in vals.items():
                     if op == ">":
-                        mask &= db[col].apply(lambda x: float(x or 0) > threshold)
+                        mask &= df[col].apply(lambda x: float(x or 0) > threshold)
                     elif op == "<":
-                        mask &= db[col].apply(lambda x: float(x or 0) < threshold)
-            elif col in db.columns:
+                        mask &= df[col].apply(lambda x: float(x or 0) < threshold)
+            elif col in df.columns:
                 if not isinstance(vals, Iterable) or isinstance(vals, str):
                     vals = [vals]
-                mask &= db[col].isin(vals)
+                mask &= df[col].isin(vals)
+        df_filtered = df[mask]
+        logger.info(f"Number of results before fallback: {len(df_filtered)}")
 
-        # Fallback: loose token-based filter if needed
-        tokens = set(re.findall(r"\w+", query_clean.lower()))
-        fallback = pd.Series([False] * len(db))
-        for col in ["description", "business_area", "business_activity", "sector", "hq_city", "hq_state", "hq_country"]:
-            if col in db.columns:
-                fallback |= db[col].str.contains("|".join(tokens), case=False, na=False)
-
-        # Debug if fuzzy match works
-        logger.info(f"Applying filters: {filters}")
-        logger.info(f"Number of results before fallback: {len(db[mask])}")
-        logger.info(f"Number of results after fallback: {len(db[mask | fallback])}")
-        return db[mask | fallback].copy()
+        # 2 - If no resuls, fallback using full-text
+        if len(df_filtered) > 0 or not free_text_terms: 
+            return df_filtered.copy()
+        
+        def match_row(row):
+            text = " ".join([
+                str(row.get("company_name","")),
+                str(row.get("description","")),
+                str(row.get("business_area","")),
+                str(row.get("business_activity","")),
+                str(row.get("hq_city","")),
+                str(row.get("hq_state","")),
+                str(row.get("hq_country",""))
+            ]).lower()
+            return any(term.lower() in text for term in free_text_terms)
+        
+        mask_ft = df.apply(match_row, axis=1)
+        df_ft = df[mask_ft]
+        logger.info(f"Number of results after fallback: {len(df_ft)}")
+        
+        return df_ft.copy()
    
     except Exception as e:
-        logger.error(f"An error occurred during search: {str(e)}", exc_info=True)
+        logger.error(f"Search error: {str(e)}", exc_info=True)
         return pd.DataFrame()
 
 def format_location(row):
