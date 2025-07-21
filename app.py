@@ -179,7 +179,7 @@ def extract_filters(query: str):
     logger.info(f"Extracted filters: {filters}")
     logger.info(f"Free-text:{free_text_terms}")
     return {
-        "filters": filters,
+        "filters": simple_filters,
         "free_text_terms": free_text_terms
     }
 
