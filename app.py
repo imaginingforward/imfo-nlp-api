@@ -1,9 +1,9 @@
 import logging
 import re
-from flask import Flask, request, jsonify
-from flask_cors import CORS
 import pandas as pd
 import spacy
+from flask import Flask, request, jsonify
+from flask_cors import CORS
 from rapidfuzz import process, fuzz
 from spacy.matcher import PhraseMatcher
 from collections.abc import Iterable
@@ -186,15 +186,22 @@ def search(query_clean, filters, free_text_terms):
         df = db.copy()
         logger.info(f"Applying filters: {filters}")
         
-        # 1 - Apply structured filters
+        # 1 - Clean funding values
+        def clean_funding(x):
+            try:
+                return float(re.sub(r"[^\d.]", "", str(x)))
+            except:
+                return 0.0
+        
+        # 2 - Apply structured filters
         mask = pd.Series([True] * len(df))
         for col, vals in filters.items():
             if col == "total_funding_raised":
                 for op, threshold in vals.items():
                     if op == ">":
-                        mask &= df[col].apply(lambda x: float(x or 0) > threshold)
+                        mask &= df[col].apply(lambda x: clean_funding(x) > threshold)
                     elif op == "<":
-                        mask &= df[col].apply(lambda x: float(x or 0) < threshold)
+                        mask &= df[col].apply(lambda x: clean_funding(x) < threshold)
             elif col in df.columns:
                 if not isinstance(vals, Iterable) or isinstance(vals, str):
                     vals = [vals]
@@ -202,13 +209,35 @@ def search(query_clean, filters, free_text_terms):
         df_filtered = df[mask]
         logger.info(f"Number of results before fallback: {len(df_filtered)}")
 
-        # 2 - If no resuls, fallback using full-text
+        # 3 - Narrow down with free-text match
+        if len(df_filtered) > 0 and free_text_terms:
+            def match_row_filtered(row):
+                text = " ".join([
+                str(row.get("company_name","")),
+                str(row.get("description","")),
+                str(row.get("business_area","")),
+                str(row.get("business_activity","")),
+                str(row.get("hq_city","")),
+                str(row.get("hq_state","")),
+                str(row.get("hq_country",""))
+            ]).lower()
+            return any(term.lower() in text for term in free_text_terms)
+
+            mask_ft = df_filtered.apply(match_row_filtered, axis=1)
+            df_filtered = df_filtered[mask_ft]
+        
+        # 4 - Return results if they exist
         if len(df_filtered) > 0:
             return df_filtered.copy()
+    
+        # 4 - Fallback to original structured results
+        if df_filtered.empty and len(df[mask]) > 0:
+            return df[mask].copy()
         
+        # 5 - If no results, fallback using full-text                                      
         terms = free_text_terms or re.findall(r"\w+", query_clean.lower())
-                                              
-        def match_row(row):
+        
+        def match_row_fallback(row):
             text = " ".join([
                 str(row.get("company_name","")),
                 str(row.get("description","")),
@@ -220,8 +249,8 @@ def search(query_clean, filters, free_text_terms):
             ]).lower()
             return any(term.lower() in text for term in terms)
         
-        mask_ft = df.apply(match_row, axis=1)
-        df_ft = df[mask_ft]
+        mask_fallback = df.apply(match_row_fallback, axis=1)
+        df_ft = df[mask_fallback]
         logger.info(f"Number of results after fallback: {len(df_ft)}")
         
         return df_ft.copy()
