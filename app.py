@@ -191,8 +191,12 @@ def search(query_clean, filters, free_text_terms):
             if col == "total_funding_raised":
                 for op, threshold in vals.items():
                     if op == ">":
-                        mask &= db["total_funding_raised"].apply(lambda x: float(x or 0) > threshold)
+                        mask &= db[col].apply(lambda x: float(x or 0) > threshold)
+                    elif op == "<":
+                        mask &= db[col].apply(lambda x: float(x or 0) < threshold)
             elif col in db.columns:
+                if not isinstance(vals, Iterable) or isinstance(vals, str):
+                    vals = [vals]
                 mask &= db[col].isin(vals)
 
         # Fallback: loose token-based filter if needed
@@ -207,6 +211,7 @@ def search(query_clean, filters, free_text_terms):
         logger.info(f"Number of results before fallback: {len(db[mask])}")
         logger.info(f"Number of results after fallback: {len(db[mask | fallback])}")
         return db[mask | fallback].copy()
+   
     except Exception as e:
         logger.error(f"An error occurred during search: {str(e)}", exc_info=True)
         return pd.DataFrame()
