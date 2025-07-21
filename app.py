@@ -94,20 +94,16 @@ def safe_set_filter(filters, col, val, origin, origin_map):
         filters[col] = {val}
         origin_map[col] = origin
         return
+        
     # If already set, respect NER/gazetteer priority over fuzzy
-    if col in filters:
-        if origin_map[col] == "NER" and origin in ["fuzzy", "acronym"]:
-            return
-        if col == "hq_country":
-            filters.pop("hq_state", None)
-            filters.pop("hq_city", None)
-            origin_map.pop("hq_state", None)
-            origin_map.pop("hq_city", None)
-        elif col == "hq_state":
-            filters.pop("hq_city", None)
-            origin_map.pop("hq_city", None)
-        filters[col] ={val}
+    current_origin = origin_map.get(col)
+    precedence = {"gazetteer": 3, "NER": 2, "acronym":1, "fuzzy": 0}
+
+    if precedence.get(origin, 0) > precedence.get(current_origin, 0):
+        filters[col] = {val}
         origin_map[col] = origin
+        return
+    return
     
 def extract_filters(query: str):
     query_clean = clean_query(query)
@@ -206,9 +202,11 @@ def search(query_clean, filters, free_text_terms):
         logger.info(f"Number of results before fallback: {len(df_filtered)}")
 
         # 2 - If no resuls, fallback using full-text
-        if len(df_filtered) > 0 or not free_text_terms: 
+        if len(df_filtered) > 0:
             return df_filtered.copy()
         
+        terms = free_text_terms or re.findall(r"\w+", query_clean.lower())
+                                              
         def match_row(row):
             text = " ".join([
                 str(row.get("company_name","")),
@@ -219,7 +217,7 @@ def search(query_clean, filters, free_text_terms):
                 str(row.get("hq_state","")),
                 str(row.get("hq_country",""))
             ]).lower()
-            return any(term.lower() in text for term in free_text_terms)
+            return any(term.lower() in text for term in terms)
         
         mask_ft = df.apply(match_row, axis=1)
         df_ft = df[mask_ft]
