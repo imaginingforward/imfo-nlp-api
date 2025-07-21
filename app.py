@@ -162,10 +162,10 @@ def extract_filters(query: str):
         # Skip if matched in NER
         if phrase in matched_tokens:
             continue
-            if phrase in query_clean.lower():
-                loc_type = gazetteer[phrase]
-                safe_set_filter(filters,f"hq_{loc_type}", phrase, "gazetteer",filter_origin)
-                matched_tokens.update(phrase_lower)
+        if phrase in query_clean.lower():
+            loc_type = gazetteer[phrase]
+            safe_set_filter(filters,f"hq_{loc_type}", phrase, "gazetteer",filter_origin)
+            matched_tokens.update(phrase_lower)
 
     # 6 - All unmatched tokens/phrases as free-text
     all_tokens = set(query_clean.split())
