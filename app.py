@@ -232,7 +232,7 @@ def format_location(row):
 def parse():
     try:
         data = request.get_json()
-        query_clean = data.get("query_clean", "").strip()
+        query_clean = data.get("query", "").strip()
         if not query_clean:
             logger.warning("Missing query string")
             return jsonify({"error": "Missing query"}), 400
