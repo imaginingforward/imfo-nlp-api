@@ -4,3 +4,4 @@ flask-cors
 gunicorn
 pandas
 rapidfuzz
+elasticsearch>=7.10.0,<8.0.0
