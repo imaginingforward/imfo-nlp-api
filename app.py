@@ -8,7 +8,7 @@ from flask_cors import CORS
 from rapidfuzz import process, fuzz
 from spacy.matcher import PhraseMatcher
 from collections.abc import Iterable
-from elasticsearch import Elasticsearch
+from opensearchpy import OpenSearch
 from uuid import uuid4
 # ----------------------------- Initialization -----------------------------
 
@@ -28,7 +28,11 @@ es_url = os.environ.get("ELASTICSEARCH_URL")
 if not es_url:
     raise RuntimeError("Missing ELASTICSEARCH_URL in environment variables")
 
-es = Elasticsearch(es_url)
+es = OpenSearch(
+    es_url,
+    verify_certs=True,
+    ssl_show_warn=False,
+)
 if not es.ping():
     raise RuntimeError("Could not connect to Elasticsearch cluster")
 
