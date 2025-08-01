@@ -2,11 +2,14 @@ import logging
 import re
 import pandas as pd
 import spacy
+import os
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from rapidfuzz import process, fuzz
 from spacy.matcher import PhraseMatcher
 from collections.abc import Iterable
+from elasticsearch import Elasticsearch
+from uuid import uuid4
 # ----------------------------- Initialization -----------------------------
 
 # Logging setup
@@ -19,6 +22,11 @@ CORS(app)
 
 # Load NLP model
 nlp = spacy.load("en_core_web_sm")
+
+# Load ElasticSearch
+es = Elasticsearch(os.environ.get("ELASTICSEARCH_URL"))
+if not es.ping():
+    raise ValueError("Could not connect to Elasticsearch cluster")
 
 # Stopwords and prepositions to exclude from alias matching
 EXCLUDED_TERMS = {"in", "from", "near", "at", "around", "on", "by"}
@@ -317,9 +325,30 @@ def parse():
         logger.error(f"Request error: {e}", exc_info=True)
         return jsonify({"error": "Internal Server Error"}), 500
 
+@app.route("/upload-to-es", methods=["POST"])
+def upload_to_elasticsearch():
+    for _, row in db.iterrows():
+        doc = {
+            "company_name": row.get("company_name", ""),
+            "business_activity": row.get("business_activity", ""),
+            "business_area": row.get("business_area", ""),
+            "description": row.get("description", ""),
+            "hq_location": format_location(row),
+            "leadership": row.get("leadership", ""),
+            "capital_partners": row.get("capital_partners", ""),
+            "notable_partners": row.get("notable_partners", ""),
+            "website_url": row.get("website_url", ""),
+            "linkedin_url": row.get("linkedin_url",""),
+            "crunchbase_url": row.get("crunchbase_url",""),
+            "twitter_url": row.get("twitter_url","")
+        }
+
+        es.index(index="space-companies", id=str(uuid4()), document=doc)
+    return jsonify({"status": "success", "message": "Uploaded to Elasticsearch"})
+    
 @app.route("/")
 def home():
     return "ImFo NLP API is live."
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run()
