@@ -188,7 +188,7 @@ def extract_filters(query: str):
         "filters": simple_filters,
         "free_text_terms": free_text_terms
     }
-
+"""
 def search(query_clean, filters, free_text_terms):
     try:
         df = db.copy()
@@ -266,16 +266,16 @@ def search(query_clean, filters, free_text_terms):
     except Exception as e:
         logger.error(f"Search error: {str(e)}", exc_info=True)
         return pd.DataFrame()
-
+"""
 def format_location(row):
     try:
         city = row.get("hq_city", "").strip().title()
         state = row.get("hq_state", "").strip().upper()
         country = row.get("hq_country", "").strip().title()
 
-        if state:
+        if city and state:
             return f"{city}, {state}"
-        elif country:
+        elif city and country:
             return f"{city}, {country}"
         return city
     except Exception as e:
@@ -286,44 +286,60 @@ def format_location(row):
 
 @app.route("/parse", methods=["POST"])
 def parse():
-    try:
-        data = request.get_json()
-        query_clean = data.get("query", "").strip()
-        if not query_clean:
-            logger.warning("Missing query string")
-            return jsonify({"error": "Missing query"}), 400
-
-        logger.info(f"Received query: {query_clean}")
-        parsed_query = extract_filters(query_clean)
-        filters = parsed_query["filters"]
-        free_text_terms = parsed_query["free_text_terms"]
-        logger.info(f"Filters applied: {filters}")
-        logger.info(f"Free text terms applied: {free_text_terms}")
+    data = request.get_json()
+    query_clean = data.get("query", "").strip()
         
-        results = search(query_clean, filters, free_text_terms)
-        logger.info(f"{len(results)} results found")
+    if not query_clean:
+        logger.warning("Missing query string")
+        return jsonify({"error": "Missing query"}), 400
 
-        response = [{
-            "company_name": row.get("company_name", ""),
-            "business_activity": row.get("business_activity", ""),
-            "business_area": row.get("business_area", ""),
-            "description": row.get("description", ""),
-            "hq_location": format_location(row),
-            "leadership": row.get("leadership", ""),
-            "capital_partners": row.get("capital_partners", ""),
-            "notable_partners": row.get("notable_partners", ""),
-            "website_url": row.get("website_url", ""),
-            "linkedin_url": row.get("linkedin_url",""),
-            "crunchbase_url": row.get("crunchbase_url",""),
-            "twitter_url": row.get("twitter_url","")
-            
-        } for _, row in results.iterrows()]
+    logger.info(f"Received query: {query_clean}")
+    es_query = {
+        "query": {
+            "multi_match": {
+                "query": query_clean,
+                "fields": [
+                    "company_name^3",
+                    "description^2",
+                    "business_activity",
+                    "business_area",
+                    "hq_location",
+                    "leadership",
+                    "capital_partners",
+                    "capital_partners"
+                ],
+                "fuzziness": "AUTO"
+            }
+        }
+    }
+                    
+    try:
+        res = es.search(index="space-companies", body=es_query)
+        hits = res["hits"]["hits"]
 
-        return jsonify(response)
+        companies = []
+        for hit in hits:
+            source = hit["_source"]
+            companies.append({
+                "company_name": source.get("company_name", ""),
+                "business_activity": source.get("business_activity", ""),
+                "business_area": source.get("business_area", ""),
+                "description": source.get("description", ""),
+                "hq_location": format_location(source),
+                "leadership": source.get("leadership", ""),
+                "capital_partners": source.get("capital_partners", ""),
+                "notable_partners": source.get("notable_partners", ""),
+                "website_url": source.get("website_url", ""),
+                "linkedin_url": source.get("linkedin_url",""),
+                "crunchbase_url": source.get("crunchbase_url",""),
+                "twitter_url": source.get("twitter_url","")  
+        })
+
+        return jsonify({"results": companies})
 
     except Exception as e:
         logger.error(f"Request error: {e}", exc_info=True)
-        return jsonify({"error": "Internal Server Error"}), 500
+        return jsonify({"error": str(e)}), 500
 
 @app.route("/upload-to-es", methods=["POST"])
 def upload_to_elasticsearch():
