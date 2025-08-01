@@ -301,7 +301,14 @@ def parse():
             "business_area": row.get("business_area", ""),
             "description": row.get("description", ""),
             "hq_location": format_location(row),
-            "website_url": row.get("website_url", "")
+            "leadership": row.get("leadership", ""),
+            "capital_partners": row.get("capital_partners", ""),
+            "notable_partners": row.get("notable_partners", ""),
+            "website_url": row.get("website_url", ""),
+            "linkedin_url": row.get("linkedin_url",""),
+            "crunchbase_url": row.get("crunchbase_url",""),
+            "twitter_url": row.get("twitter_url","")
+            
         } for _, row in results.iterrows()]
 
         return jsonify(response)
