@@ -13,13 +13,9 @@ SSA,business_activity,space situational awareness
 PNT,business_activity,position navigation tracking
 ISR,business_activity,"intelligence, surveillance, reconnaissance"
 IFC,business_activity,in flight connectivity
-DIU Blue List,funding_round,
-AFWERX,funding_round,
-SBIR/STRR,funding_round,
-DOD,notable_partners,
-DIU,notable_partners,
-DARPA,notable_partners,
-USSF,notable_partners,
+DOD,notable_partners, department of defense
+DIU,notable_partners, defense innovation unit
+USSF,notable_partners, united states space force
 LEO,business_activity,low earth orbit
 VLEO,business_activity,very low earth orbit
 HEO,business_activity,high earth orbit
@@ -65,3 +61,4 @@ UK,hq_country,England
 USA,hq_country,United States of America
 deutschland,hq_country,Germany
 allemagne,hq_country,Germany
+
