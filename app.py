@@ -24,8 +24,8 @@ CORS(app)
 nlp = spacy.load("en_core_web_sm")
 
 # Load ElasticSearch
-es_url = os.environ.get("ELASTICSEARCH_URL"))
-if not es.url():
+es_url = os.environ.get("ELASTICSEARCH_URL")
+if not es_url():
     raise RuntimeError("Missing ELASTICSEARCH_URL in environment variables")
 
 es = Elasticsearch(es_url)
