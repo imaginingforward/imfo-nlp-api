@@ -466,13 +466,13 @@ def convert_funding_to_numeric(funding_str):
     else:
         return int(num)
 
-@app.route("/delete-index", methods=["DELETE"])
+'''@app.route("/delete-index", methods=["DELETE"])
 def delete_index():
     try:
         es.indices.delete(index="market-intel", ignore=[400, 404])
         return jsonify({"status": "success", "message": "Index deleted"})
     except Exception as e:
-        return jsonify({"status": "error", "message": str(e)}), 500
+        return jsonify({"status": "error", "message": str(e)}), 500'''
         
 @app.route("/")
 def home():
