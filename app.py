@@ -276,17 +276,17 @@ def parse():
     # 4. Add location filters
     if "hq_state" in filters:
         must_clauses.append({
-            "term": {"hq_state": filters["hq_state"]}
+            "term": {"hq_state.keyword": filters["hq_state"].lower()}
         })
         
     if "hq_country" in filters:
         must_clauses.append({
-            "term": {"hq_country": filters["hq_country"]}
+            "term": {"hq_country.keyword": filters["hq_country"].lower()}
         })
         
     if "hq_city" in filters:
         must_clauses.append({
-            "term": {"hq_city": filters["hq_city"]}
+            "term": {"hq_city.keyword": filters["hq_city"].lower()}
         })
 
     # 5. Add funding stage filter (i.e. series A companies)
