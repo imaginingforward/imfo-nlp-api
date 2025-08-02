@@ -82,19 +82,6 @@ DIU,notable_partners,defense innovation unit
 DARPA,notable_partners,
 UAF,notable_partners,united states air force
 USSF,notable_partners,united states space force
-NASA,notable_partners,
-fortune 500,notable_partners,
-seraphim capital,capital_partners,
-draper associates,capital_partners,
-accel,capital_partners,
-a16z,capital_partners,
-andreessen horowitz,capital_partners,
-y combinator,capital_partners,
-yc,capital_partners,
-founders fund,capital_partners,
-sequoia capital,capital_partners,
-xyz ventures,capital_partners,
-point72 ventures,capital_partners,
 LA,hq_city,Los Angeles
 socal,hq_city,Los Angeles
 LOS ANGELES,hq_city,Los Angeles
@@ -113,7 +100,3 @@ CALIFORNIA,hq_state,California
 UAE,hq_country,United Arab Emirates
 UK,hq_country,England
 USA,hq_country,United States of America
-government contracts,,
-defense contracts,,
-gov,,
-government clients,,
