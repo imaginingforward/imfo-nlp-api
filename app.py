@@ -271,7 +271,6 @@ def parse():
             "companies": companies,
             "count": res["hits"]["total"]["value"]
             # total hits count from ES
-        response
         })
 
     except Exception as e:
