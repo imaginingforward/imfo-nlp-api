@@ -267,7 +267,12 @@ def parse():
                 "twitter_url": source.get("twitter_url","")  
         })
 
-        return jsonify({"results": companies})
+        return jsonify({
+            "companies": companies,
+            "count": res["hits"]["total"]["value"]
+            # total hits count from ES
+        response
+        })
 
     except Exception as e:
         logger.error(f"Request error: {e}", exc_info=True)
