@@ -201,7 +201,7 @@ def extract_filters(query: str):
 def format_location(row):
     try:
         city = row.get("hq_city", "").strip().title()
-        state = row.get("hq_state", "").strip().upper()
+        state = row.get("hq_state", "").strip().lower()
         country = row.get("hq_country", "").strip().title()
 
         if city and state:
@@ -276,17 +276,17 @@ def parse():
     # 4. Add location filters
     if "hq_state" in filters:
         must_clauses.append({
-            "match": {"hq_state": filters["hq_state"]}
+            "term": {"hq_state": filters["hq_state"].lower()}
         })
         
     if "hq_country" in filters:
         must_clauses.append({
-            "match": {"hq_country": filters["hq_country"]}
+            "term": {"hq_country": filters["hq_country"].lower()}
         })
         
     if "hq_city" in filters:
         must_clauses.append({
-            "match": {"hq_city": filters["hq_city"]}
+            "term": {"hq_city": filters["hq_city"].lower()}
         })
 
     # 5. Add funding stage filter (i.e. series A companies)
@@ -385,8 +385,18 @@ def parse():
 def upload_to_elasticsearch():
     actions = []
 
+    logger.info(f"Total rows to process: {len(db)}")
+    sample_row = db.iloc[0] if len(db)>0 else None
+    if sample_row is not None:
+        logger.info(f"Sample row data: {sample_row.to_dict()}")
+        logger.info(f"hq_city: '{sample_row.get('hq_city','')}'")
+        logger.info(f"hq_state: '{sample_row.get('hq_state','')}'")
+        logger.info(f"hq_country: '{sample_row.get('hq_country','')}'")
+        
     # Convert csv matrix to single document with fields and formatted location
     for _, row in db.iterrows():
+        if len(actions) <3:
+            logger.info(f"Processing row: hq_city= '{row.get('hq_city','')}', hq_state: '{row.get('hq_state','')}', hq_country: '{row.get('hq_country','')}'")
         doc = {
             "_index": "market-intel",
             "_id": str(uuid4()),
