@@ -5,17 +5,31 @@ space companies,sector,Space Tech
 space startups,sector,Space Tech
 startups,sector,Space Tech
 companies,sector,Space Tech
+companies who sell,sector,Space Tech
+companies that supply,sector,Space Tech
+companies that make,sector,Space Tech
+manufacturers,sector,Space Tech
+manufacturing,sector,Space Tech
+have raised over,latest_funding_stage,*
+investment of,latest_funding_stage,*
 funding,latest_funding_stage,*
 raised,latest_funding_raised ,*
+seed,latest_funding_raised ,seed
+series A,latest_funding_raised ,series a
+series B,latest_funding_raised ,series b
+series C,latest_funding_raised ,series c
+pre seed,latest_funding_raised ,pre seed
+stealth,latest_funding_raised ,stealth
+venture funding,latest_funding_raised ,*
+C4ISR,business_activity,"command, control, communications, computers, intelligence, surveillance, reconnaissance"
 SAR,business_activity,synthetic aperture radar
 GNSS,business_activity,global navigation satellite system
 SSA,business_activity,space situational awareness
 PNT,business_activity,position navigation tracking
 ISR,business_activity,"intelligence, surveillance, reconnaissance"
 IFC,business_activity,in flight connectivity
-DOD,notable_partners, department of defense
-DIU,notable_partners, defense innovation unit
-USSF,notable_partners, united states space force
+RPOD,business_activity,"rendezvous, proximity operations, docking"
+AIS,business_activity,automatic identification system
 LEO,business_activity,low earth orbit
 VLEO,business_activity,very low earth orbit
 HEO,business_activity,high earth orbit
@@ -26,12 +40,17 @@ VTVL,business_activity,"vertical take-off, vertical landing"
 UAV,business_activity,unmanned aerial vehicle
 UAV,business_area,Drones & Unmanned Vehicles
 drone,business_area,Drones & Unmanned Vehicles
+environment monitoring,business_area,Imaging & Perception Systems
+earth imaging,business_area,Imaging & Perception Systems
+earth observation,business_area,Imaging & Perception Systems
 optical,business_area,Satellite Communications & Networking
 network,business_area,Satellite Communications & Networking
 communications,business_area,Satellite Communications & Networking
 quantum,business_area,Satellite Communications & Networking
 satcom,business_area,Satellite Communications & Networking
 satcomms,business_area,Satellite Communications & Networking
+satcoms,business_area,Satellite Communications & Networking
+satcom,business_area,Satellite Communications & Networking
 frontier,business_area,Space Defense & Security
 defense,business_area,Space Defense & Security
 weapon,business_area,Space Defense & Security
@@ -39,26 +58,62 @@ camera,business_area,Space Defense & Security
 sensors,business_area,Space Defense & Security
 cyber,business_area,Space Defense & Security
 national security,business_area,Space Defense & Security
-earth imaging,business_area,Imaging & Perception Systems
-earth observation,business_area,Imaging & Perception Systems
 cubesat,business_area,Launch & Payload
 nanosat,business_area,Launch & Payload
 satellite manufacturer,business_area,Launch & Payload
 satellite producer,business_area,Launch & Payload
 orbital vehicle,business_area,Launch & Payload
+propulsion,business_area,Energy & Propulsion
+electrical components,business_area,"Infrastructure, Manufacturing & Materials"
+components,business_area,"Infrastructure, Manufacturing & Materials"
+supply,business_area,"Infrastructure, Manufacturing & Materials"
+supplier,business_area,"Infrastructure, Manufacturing & Materials"
+suppliers,business_area,"Infrastructure, Manufacturing & Materials"
+manufacturing,business_area,"Infrastructure, Manufacturing & Materials"
+manufacturing facility,business_area,"Infrastructure, Manufacturing & Materials"
+facility,business_area,"Infrastructure, Manufacturing & Materials"
+assembly,business_area,"Infrastructure, Manufacturing & Materials"
+DIU Blue List,funding_round,SBIR/STRR
+AFWERX,funding_round,SBIR/STRR
+SpaceWERX,funding_round,SBIR/STRR
+SBIR/STRR,funding_round,SBIR/STRR
+DOD,notable_partners,department of defense
+DIU,notable_partners,defense innovation unit
+DARPA,notable_partners,
+UAF,notable_partners,united states air force
+USSF,notable_partners,united states space force
+NASA,notable_partners,
+fortune 500,notable_partners,
+seraphim capital,capital_partners,
+draper associates,capital_partners,
+accel,capital_partners,
+a16z,capital_partners,
+andreessen horowitz,capital_partners,
+y combinator,capital_partners,
+yc,capital_partners,
+founders fund,capital_partners,
+sequoia capital,capital_partners,
+xyz ventures,capital_partners,
+point72 ventures,capital_partners,
 LA,hq_city,Los Angeles
-LAX,hq_city,Los Angeles
 socal,hq_city,Los Angeles
+LOS ANGELES,hq_city,Los Angeles
+los angeles,hq_city,Los Angeles
+Los Angeles,hq_city,Los Angeles
 NY,hq_city,New York City
 NYC,hq_city,New York City
 SF,hq_city,San Francisco
 SFO,hq_city,San Francisco
 bay area,hq_city,San Francisco
 Bangalore,hq_city,Bengaluru
+APG,hq_city,Aberdeen Proving Ground
 cali,hq_state,California
+california,hq_state,California
+CALIFORNIA,hq_state,California
 UAE,hq_country,United Arab Emirates
 UK,hq_country,England
 USA,hq_country,United States of America
-deutschland,hq_country,Germany
-allemagne,hq_country,Germany
-
+government contracts,,
+defense contracts,,
+gov,,
+government clients,,
