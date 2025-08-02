@@ -394,7 +394,9 @@ def parse():
 def upload_to_elasticsearch():
     actions = []
 
+    logger.info(f"DataFrame columns: {list(db.columns)}")
     logger.info(f"Total rows to process: {len(db)}")
+    
     sample_row = db.iloc[0] if len(db)>0 else None
     if sample_row is not None:
         logger.info(f"Sample row data: {sample_row.to_dict()}")
