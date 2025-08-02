@@ -225,26 +225,123 @@ def parse():
         return jsonify({"error": "Missing query"}), 400
 
     logger.info(f"Received query: {query_clean}")
-    es_query = {
-        "query": {
+
+    # Extract filters and free text terms using your existing function
+    parsed_query = extract_filters(query_clean)
+    filters = parsed_query["filters"]
+    free_text_terms = parsed_query["free_text_terms"]
+
+    logger.info(f"Parsed filters: {filters}")
+    logger.info(f"Free text terms: {free_text_terms}")
+
+    # Build Elasticsearch query
+    must_clauses = []
+
+    # 1. Add text search for free text terms (if any)
+    if free_text_terms:
+        free_text_query = " ".join(free_text_terms)
+        must_clauses.append({
            "multi_match": {
-                "query": query_clean,
+                "query": free_text_query,
                 "fields": [
                     "company_name^3",
                     "description^2",
-                    "sector"
+                    "sector",
                     "business_activity",
                     "business_area",
                     "hq_location",
                     "leadership",
+                    "latest_funding_stage",
+                    "latest_funding_raised",
+                    "total_funding_raised",
                     "capital_partners",
-                    "capital_partners"
+                    "notable_partners"
                 ],
                 "fuzziness": "AUTO"
             }
+        })
+
+    # 2. Add sector filter
+    if "sector" in filters:
+        must_clauses.append({
+            "term": {"sector": filters["sector"]}
+        })
+
+    # 3. Add business area filter
+    if "business_area" in filters:
+        must_clauses.append({
+            "term": {"business_area": filters["business_area"]}
+        })
+   
+    # 4. Add location filters
+    if "hq_state" in filters:
+        must_clauses.append({
+            "match": {"hq_location": filters["hq_state"]}
+        })
+        
+    if "hq_country" in filters:
+        must_clauses.append({
+            "match": {"hq_location": filters["hq_country"]}
+        })
+        
+    if "hq_city" in filters:
+        must_clauses.append({
+            "match": {"hq_location": filters["hq_city"]}
+        })
+
+    # 5. Add funding stage filter (i.e. series A companies)
+    if "latest_funding_stage" in filters:
+        must_clauses.append({
+            "term": {"latest_funding_stage": filters["latest_funding_stage"]}
+        })
+        
+    # 6. Add business area filter (i.e. companies raised more than $5M)
+    if "total_funding_raised" in filters:
+        funding_filter = filters["total_funding_raised"]
+        if isinstance(funding_filter, dict) and ">" in funding_filter:
+            min_amount = funding_filter[">"]
+            must_clauses.append({
+                "range": {
+                    "total_funding_raised_numeric": {
+                        "gte": min_amount
+                    }
+                }
+            })
+        
+    # 7. General search, catch all
+    if not must_clauses:
+        must_clauses.append({
+            "multi_match": {
+                "query": query_clean,
+                "fields": [
+                    "company_name^3",
+                    "description^2",
+                    "sector",
+                    "business_activity",
+                    "business_area",
+                    "hq_location",
+                    "leadership",
+                    "latest_funding_stage",
+                    "latest_funding_raised",
+                    "total_funding_raised",
+                    "capital_partners",
+                    "notable_partners"
+                ],
+                "fuzziness": "AUTO"
+            }
+        })
+
+    # Build the final Elasticsearch query
+    es_query = {
+        "query": {
+            "bool": {
+                "must": must_clauses
+            }
         }
     }
-                    
+
+    logger.info(f"Elasticsearch query: {es_query}")
+
     try:
         res = es.search(index="market-intel", body=es_query)
         hits = res["hits"]["hits"]
@@ -261,6 +358,9 @@ def parse():
                 "description": source.get("description", ""),
                 "hq_location": source.get("hq_location", ""),
                 "leadership": source.get("leadership", ""),
+                "latest_funding_stage": source.get("latest_funding_stage", ""),
+                "latest_funding_raised": source.get("latest_funding_raised", ""),
+                "total_funding_raised": source.get("total_funding_raised", ""),
                 "capital_partners": source.get("capital_partners", ""),
                 "notable_partners": source.get("notable_partners", ""),
                 "website_url": source.get("website_url", ""),
@@ -296,6 +396,10 @@ def upload_to_elasticsearch():
                 "description": row.get("description", ""),
                 "hq_location": format_location(row),
                 "leadership": row.get("leadership", ""),
+                "latest_funding_stage": row.get("latest_funding_stage", ""),
+                "latest_funding_raised": row.get("latest_funding_raised", ""),
+                "total_funding_raised": row.get("total_funding_raised", ""),
+                "total_funding_raised_numeric": convert_funding_to_numeric(row.get("total_funding_raised", "")),
                 "capital_partners": row.get("capital_partners", ""),
                 "notable_partners": row.get("notable_partners", ""),
                 "website_url": row.get("website_url", ""),
@@ -312,7 +416,30 @@ def upload_to_elasticsearch():
         return jsonify({"status": "success", "indexed_docs": success})
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
-    
+
+def convert_funding_to_numeric(funding_str):
+    """Convert funding strings like '5M' to numeric values"""
+    if not funding_str:
+        return 0
+
+    # Remove $ and spaces, convert to lowercase
+    clean = re.sub(r'[$,\s]', '', str(funding_str).lower())
+
+    # Extract number and multiplier
+    match = re.search(r'([\d.]+)([mb]?)', clean)
+    if not match:
+        return 0
+
+    num = float(match.group(1))
+    multiplier = match.group(2)
+
+    if multiplier == 'm':
+        return int(num * 1_000_000)
+    elif multiplier == 'b':
+        return int(num * 1_000_000_000)
+    else:
+        return int(num)
+        
 @app.route("/")
 def home():
     return "ImFo NLP API is live."
