@@ -227,28 +227,27 @@ def parse():
     logger.info(f"Received query: {query_clean}")
     es_query = {
         "query": {
-            "match_all": {}
-            },
-            "size": 5
+           "multi_match": {
+                "query": query_clean,
+                "fields": [
+                    "company_name^3",
+                    "description^2",
+                    "business_activity",
+                    "business_area",
+                    "hq_location",
+                    "leadership",
+                    "capital_partners",
+                    "capital_partners"
+                ],
+                "fuzziness": "AUTO"
+            }
+        }
     }
-           # "multi_match": {
-                #"query": query_clean,
-                #"fields": [
-                 #   "company_name^3",
-                 #   "description^2",
-                 #   "business_activity",
-                 #   "business_area",
-                 #   "hq_location",
-                 #   "leadership",
-                 #   "capital_partners",
-                 #   "capital_partners"
-               # ],
-             #   "fuzziness": "AUTO"
-           # }
                     
     try:
         res = es.search(index="market-intel", body=es_query)
         hits = res["hits"]["hits"]
+        logger.info(f"Number of hits returned: {len(hits)}")
 
         companies = []
         for hit in hits:
@@ -300,7 +299,7 @@ def upload_to_elasticsearch():
         }
         actions.append(doc)
 
-    #Bulk index all documents in one request
+    # Bulk index all documents in one request
     try:
         success, _= bulk(es,actions)
         return jsonify({"status": "success", "indexed_docs": success})
