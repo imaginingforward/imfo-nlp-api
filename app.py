@@ -257,7 +257,7 @@ def parse():
                 "business_activity": source.get("business_activity", ""),
                 "business_area": source.get("business_area", ""),
                 "description": source.get("description", ""),
-                "hq_location": format_location(source),
+                "hq_location": source.get("hq_location", ""),
                 "leadership": source.get("leadership", ""),
                 "capital_partners": source.get("capital_partners", ""),
                 "notable_partners": source.get("notable_partners", ""),
