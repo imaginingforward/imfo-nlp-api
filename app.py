@@ -264,7 +264,7 @@ def parse():
     # 2. Add sector filter
     if "sector" in filters:
         must_clauses.append({
-            "term": {"sector": filters["sector"]}
+            "match": {"sector": filters["sector"]}
         })
 
     # 3. Add business area filter
