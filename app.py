@@ -232,6 +232,7 @@ def parse():
                 "fields": [
                     "company_name^3",
                     "description^2",
+                    "sector"
                     "business_activity",
                     "business_area",
                     "hq_location",
@@ -256,6 +257,7 @@ def parse():
                 "company_name": source.get("company_name", ""),
                 "business_activity": source.get("business_activity", ""),
                 "business_area": source.get("business_area", ""),
+                "sector": source.get("sector", ""),
                 "description": source.get("description", ""),
                 "hq_location": source.get("hq_location", ""),
                 "leadership": source.get("leadership", ""),
@@ -290,6 +292,7 @@ def upload_to_elasticsearch():
                 "company_name": row.get("company_name", ""),
                 "business_activity": row.get("business_activity", ""),
                 "business_area": row.get("business_area", ""),
+                "sector": row.get("sector", ""),
                 "description": row.get("description", ""),
                 "hq_location": format_location(row),
                 "leadership": row.get("leadership", ""),
