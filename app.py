@@ -276,17 +276,17 @@ def parse():
     # 4. Add location filters
     if "hq_state" in filters:
         must_clauses.append({
-            "match": {"hq_location": filters["hq_state"]}
+            "term": {"hq_state": filters["hq_state"]}
         })
         
     if "hq_country" in filters:
         must_clauses.append({
-            "match": {"hq_location": filters["hq_country"]}
+            "term": {"hq_country": filters["hq_country"]}
         })
         
     if "hq_city" in filters:
         must_clauses.append({
-            "match": {"hq_location": filters["hq_city"]}
+            "term": {"hq_city": filters["hq_city"]}
         })
 
     # 5. Add funding stage filter (i.e. series A companies)
@@ -337,7 +337,9 @@ def parse():
             "bool": {
                 "must": must_clauses
             }
-        }
+        },
+        # Else Elasticsearch limits to 10 results
+        "size": 10000 
     }
 
     logger.info(f"Elasticsearch query: {es_query}")
@@ -356,7 +358,7 @@ def parse():
                 "business_area": source.get("business_area", ""),
                 "sector": source.get("sector", ""),
                 "description": source.get("description", ""),
-                "hq_location": source.get("hq_location", ""),
+                "hq_location": source.get("hq_location_display", ""),
                 "leadership": source.get("leadership", ""),
                 "latest_funding_stage": source.get("latest_funding_stage", ""),
                 "latest_funding_raised": source.get("latest_funding_raised", ""),
@@ -382,9 +384,9 @@ def parse():
 @app.route("/upload-to-es", methods=["POST"])
 def upload_to_elasticsearch():
     actions = []
-    
+
+    # Convert csv matrix to single document with fields and formatted location
     for _, row in db.iterrows():
-        # Prepare a single document with fields and formatted location
         doc = {
             "_index": "market-intel",
             "_id": str(uuid4()),
@@ -394,7 +396,10 @@ def upload_to_elasticsearch():
                 "business_area": row.get("business_area", ""),
                 "sector": row.get("sector", ""),
                 "description": row.get("description", ""),
-                "hq_location": format_location(row),
+                "hq_city": row.get("hq_city", "").strip().lower(),
+                "hq_state": row.get("hq_state", "").strip().lower(),
+                "hq_country": row.get("hq_country", "").strip().lower(),
+                "hq_location_display": format_location(row),
                 "leadership": row.get("leadership", ""),
                 "latest_funding_stage": row.get("latest_funding_stage", ""),
                 "latest_funding_raised": row.get("latest_funding_raised", ""),
