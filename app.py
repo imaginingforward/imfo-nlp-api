@@ -390,6 +390,42 @@ def parse():
         logger.error(f"Request error: {e}", exc_info=True)
         return jsonify({"error": str(e)}), 500
 
+@app.route("/create-index", methods=["POST"])
+def create_index():
+    try:
+        # Define the mapping for your fields
+        mapping = {
+            "mappings": {
+                "properties": {
+                    "company_name": {"type": "text", "fields": {"keyword": {"type": "keyword"}}},
+                    "business_activity": {"type": "text", "fields": {"keyword": {"type": "keyword"}}},
+                    "business_area": {"type": "text", "fields": {"keyword": {"type": "keyword"}}},
+                    "sector": {"type": "text", "fields": {"keyword": {"type": "keyword"}}},
+                    "description": {"type": "text", "fields": {"keyword": {"type": "keyword"}}},
+                    "hq_city": {"type": "keyword"},  # Use keyword for exact matching
+                    "hq_state": {"type": "keyword"}, # Use keyword for exact matching
+                    "hq_country": {"type": "keyword"}, # Use keyword for exact matching
+                    "hq_location_display": {"type": "text", "fields": {"keyword": {"type": "keyword"}}},
+                    "leadership": {"type": "text", "fields": {"keyword": {"type": "keyword"}}},
+                    "latest_funding_stage": {"type": "keyword"},
+                    "latest_funding_raised": {"type": "text", "fields": {"keyword": {"type": "keyword"}}},
+                    "total_funding_raised": {"type": "text", "fields": {"keyword": {"type": "keyword"}}},
+                    "total_funding_raised_numeric": {"type": "long"},
+                    "capital_partners": {"type": "text", "fields": {"keyword": {"type": "keyword"}}},
+                    "notable_partners": {"type": "text", "fields": {"keyword": {"type": "keyword"}}},
+                    "website_url": {"type": "keyword"},
+                    "linkedin_url": {"type": "keyword"},
+                    "crunchbase_url": {"type": "keyword"},
+                    "twitter_url": {"type": "keyword"}
+                }
+            }
+        }
+        
+        es.indices.create(index="market-intel", body=mapping, ignore=400)
+        return jsonify({"status": "success", "message": "Index created with proper mappings"})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
 @app.route("/upload-to-es", methods=["POST"])
 def upload_to_elasticsearch():
     actions = []
