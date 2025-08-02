@@ -227,22 +227,24 @@ def parse():
     logger.info(f"Received query: {query_clean}")
     es_query = {
         "query": {
-            "multi_match": {
-                "query": query_clean,
-                "fields": [
-                    "company_name^3",
-                    "description^2",
-                    "business_activity",
-                    "business_area",
-                    "hq_location",
-                    "leadership",
-                    "capital_partners",
-                    "capital_partners"
-                ],
-                "fuzziness": "AUTO"
-            }
-        }
+            "match_all": {}
+            },
+            "size": 5
     }
+           # "multi_match": {
+                #"query": query_clean,
+                #"fields": [
+                 #   "company_name^3",
+                 #   "description^2",
+                 #   "business_activity",
+                 #   "business_area",
+                 #   "hq_location",
+                 #   "leadership",
+                 #   "capital_partners",
+                 #   "capital_partners"
+               # ],
+             #   "fuzziness": "AUTO"
+           # }
                     
     try:
         res = es.search(index="market-intel", body=es_query)
