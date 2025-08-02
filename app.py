@@ -9,6 +9,7 @@ from rapidfuzz import process, fuzz
 from spacy.matcher import PhraseMatcher
 from collections.abc import Iterable
 from opensearchpy import OpenSearch
+from opensearchpy.helpers import bulk
 from uuid import uuid4
 # ----------------------------- Initialization -----------------------------
 
@@ -244,7 +245,7 @@ def parse():
     }
                     
     try:
-        res = es.search(index="space-companies", body=es_query)
+        res = es.search(index="market-intel", body=es_query)
         hits = res["hits"]["hits"]
 
         companies = []
@@ -273,24 +274,36 @@ def parse():
 
 @app.route("/upload-to-es", methods=["POST"])
 def upload_to_elasticsearch():
+    actions = []
+    
     for _, row in db.iterrows():
+        # Prepare a single document with fields and formatted location
         doc = {
-            "company_name": row.get("company_name", ""),
-            "business_activity": row.get("business_activity", ""),
-            "business_area": row.get("business_area", ""),
-            "description": row.get("description", ""),
-            "hq_location": format_location(row),
-            "leadership": row.get("leadership", ""),
-            "capital_partners": row.get("capital_partners", ""),
-            "notable_partners": row.get("notable_partners", ""),
-            "website_url": row.get("website_url", ""),
-            "linkedin_url": row.get("linkedin_url",""),
-            "crunchbase_url": row.get("crunchbase_url",""),
-            "twitter_url": row.get("twitter_url","")
+            "_index": "market-intel",
+            "_id": str(uuid4()),
+            "_source": {
+                "company_name": row.get("company_name", ""),
+                "business_activity": row.get("business_activity", ""),
+                "business_area": row.get("business_area", ""),
+                "description": row.get("description", ""),
+                "hq_location": format_location(row),
+                "leadership": row.get("leadership", ""),
+                "capital_partners": row.get("capital_partners", ""),
+                "notable_partners": row.get("notable_partners", ""),
+                "website_url": row.get("website_url", ""),
+                "linkedin_url": row.get("linkedin_url",""),
+                "crunchbase_url": row.get("crunchbase_url",""),
+                "twitter_url": row.get("twitter_url","")
+            }
         }
+        actions.append(doc)
 
-        es.index(index="space-companies", id=str(uuid4()), document=doc)
-    return jsonify({"status": "success", "message": "Uploaded to Elasticsearch"})
+    #Bulk index all documents in one request
+    try:
+        success, _= bulk(es,actions)
+        return jsonify({"status": "success", "indexed_docs": success})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
     
 @app.route("/")
 def home():
