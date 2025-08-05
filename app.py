@@ -201,7 +201,7 @@ def extract_filters(query: str):
 def format_location(row):
     try:
         city = row.get("hq_city", "").strip().title()
-        state = row.get("hq_state", "").strip().lower()
+        state = row.get("hq_state", "").strip().title()
         country = row.get("hq_country", "").strip().title()
 
         if city and state:
