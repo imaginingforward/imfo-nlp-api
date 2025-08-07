@@ -11,11 +11,20 @@ from collections.abc import Iterable
 from opensearchpy import OpenSearch
 from opensearchpy.helpers import bulk
 from uuid import uuid4
+import json
+from datetime import datetime
 # ----------------------------- Initialization -----------------------------
 
 # Logging setup
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# Analytics logger setup
+analytics_logger = logging.getLogger('analytics')
+analytics_handler = logging.FileHandler('analytics.log')
+analytics_handler.setFormatter(logging.Formatter('%(asctime)s - %(message)s'))
+analytics_logger.addHandler(analytics_handler)
+analytics_logger.setLevel(logging.INFO)
 
 # Flask app
 app = Flask(__name__)
@@ -219,6 +228,9 @@ def format_location(row):
 def parse():
     data = request.get_json()
     query_clean = data.get("query", "").strip()
+
+    # LOG THE SEARCH QUERY IMMEDIATELY
+    analytics_logger.info(f"SEARCH_QUERY: {query_clean}")
         
     if not query_clean:
         logger.warning("Missing query string")
@@ -355,6 +367,13 @@ def parse():
         hits = res["hits"]["hits"]
         logger.info(f"Number of hits returned: {len(hits)}")
 
+        # LOG SEARCH RESULTS
+        result_count = len(hits)
+        analytics_logger.info(f"SEARCH_RESULTS: query='{query_clean}', count={result_count}")
+        
+        if result_count == 0:
+            analytics_logger.info(f"NULL_RESULTS: query='{query_clean}'")
+
         companies = []
         for hit in hits:
             source = hit["_source"]
@@ -389,6 +408,33 @@ def parse():
     except Exception as e:
         logger.error(f"Request error: {e}", exc_info=True)
         return jsonify({"error": str(e)}), 500
+
+@app.route("/api/track", methods=["POST"])
+def track_event():
+    try:
+        data = request.get_json()
+        event_type = data.get('event')
+        
+        if event_type == 'link_click':
+            company = data.get('company', 'unknown')
+            link_type = data.get('link_type', 'unknown')
+            
+            analytics_logger.info(f"LINK_CLICK: company='{company}', link_type='{link_type}'")
+        
+        elif event_type == 'page_view':
+            page = data.get('page', 'unknown')
+            analytics_logger.info(f"PAGE_VIEW: page='{page}'")
+        
+        elif event_type == 'company_view':
+            company = data.get('company', 'unknown')
+            analytics_logger.info(f"COMPANY_VIEW: company='{company}'")
+        
+        return jsonify({"status": "logged"}), 200
+    
+    except Exception as e:
+        analytics_logger.error(f"TRACKING_ERROR: {str(e)}")
+        return jsonify({"error": "logging failed"}), 500
+        
 
 @app.route("/create-index", methods=["POST"])
 def create_index():
@@ -512,6 +558,7 @@ def delete_index():
         
 @app.route("/")
 def home():
+    analytics_logger.info("PAGE_VIEW: page='home'")
     return "ImFo NLP API is live."
 
 if __name__ == "__main__":
